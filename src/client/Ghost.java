@@ -1,6 +1,7 @@
 
 package client;
 
+import CodeUtils.Parser;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
@@ -91,5 +92,9 @@ public class Ghost extends Node implements Character {
         } catch (IllegalOperationException ex) {
             Logger.getLogger(Ghost.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public String getCharacterClass() {
+        return Parser.parseForClassName(this.getClass().toString());
     }
 }

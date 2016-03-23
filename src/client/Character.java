@@ -36,5 +36,6 @@ public interface Character {
     // increments life count by one 
     public void heal();
     
-    
+    // returns the class of the instantiated character - Ghost or Pacman
+    public String getCharacterClass();
 }

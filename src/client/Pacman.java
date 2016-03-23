@@ -1,6 +1,7 @@
 
 package client;
 
+import CodeUtils.Parser;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
@@ -74,6 +75,10 @@ public class Pacman extends Node implements Character {
 
     public void heal() {
         this.lives++;
+    }
+
+    public String getCharacterClass() {
+        return Parser.parseForClassName(this.getClass().toString());
     }
     
 }
