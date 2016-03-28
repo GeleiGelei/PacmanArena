@@ -8,18 +8,20 @@ import server.GameCubeMaze;
 
 @Serializable
 public class NewClientMessage extends AbstractMessage {
-
+    
     public int ID;
     public GameCubeMaze maze;
-
+    public LinkedList<FieldData> data;
     // -------------------------------------------------------------------------
     public NewClientMessage() {
+        
     }
 
     // -------------------------------------------------------------------------
-    public NewClientMessage(int ID, GameCubeMaze maze) {
+    public NewClientMessage(int ID, GameCubeMaze maze, LinkedList<FieldData> data) {
         super();
         this.ID = ID;
         this.maze = maze;
+        this.data = data;
     }
 }

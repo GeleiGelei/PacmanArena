@@ -28,6 +28,7 @@ public class ServerNetworkHandler implements MessageListener, ConnectionListener
             server.addConnectionListener(this);
             server.start();
         } catch (IOException ex) {
+            System.out.println("ERROR: ServerNetworkHandler //Failed to create server");            
             Logger.getLogger(ServerNetworkHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -41,7 +42,7 @@ public class ServerNetworkHandler implements MessageListener, ConnectionListener
     // -------------------------------------------------------------------------
     public void connectionAdded(Server server, HostedConnection conn) {
         int connID = conn.getId();
-        System.out.println("Client " + connID + " connected");
+        System.out.println("Client " + connID + " connecting");
         Message m;
         try {
             // gameServer.newConnectionReceived throws an Exception
@@ -50,9 +51,31 @@ public class ServerNetworkHandler implements MessageListener, ConnectionListener
             // if all is ok, broadcast gameServer-created message
             // this is usually an InitialClientMessage
             // (which is just not hard coded here to keep it customizable).
+/***********************
+ * 
+ * For Testing Purposes Begin
+ * 
+ ***********************/
+System.out.println("Before Broadcasting: SererNetworkHandler.connectionAdded");
+/***********************
+ * 
+ * For Testing Purposes End
+ * 
+ ***********************/
             broadcast(m);
+/***********************
+ * 
+ * For Testing Purposes Begin
+ * 
+ ***********************/
+System.out.println("After Broadcasting: SererNetworkHandler.connectionAdded");
+/***********************
+ * 
+ * For Testing Purposes End
+ * 
+ ***********************/
         } catch (Exception e) {
-            // Connection not accepted.
+            System.out.println("ERROR: Connection " + connID + " not completed//ServerNetworkHandler.connectionAdded");
         }
     }
 
@@ -62,7 +85,7 @@ public class ServerNetworkHandler implements MessageListener, ConnectionListener
             HostedConnection hc = server.getConnection(ID);
             server.broadcast(Filters.in(hc), msg);
         } catch (Exception e) {
-            System.out.println("ERROR in sendToClient()");
+            System.out.println("ERROR: ServerNetworkHandler.sendToClient //Getting connection or broadcasting");
         }
     }
 
@@ -76,3 +99,4 @@ public class ServerNetworkHandler implements MessageListener, ConnectionListener
         // TODO
     }
 }
+    

@@ -21,6 +21,7 @@ public class ClientNetworkHandler implements MessageListener {
 
     // -------------------------------------------------------------------------
     public ClientNetworkHandler(ClientNetworkListener gc) {
+        
         initNetwork();
         gameClient = gc;
     }
@@ -40,7 +41,8 @@ public class ClientNetworkHandler implements MessageListener {
     }
    
     // -------------------------------------------------------------------------
-    public void messageReceived(Object source, Message msg) {        
+    public void messageReceived(Object source, Message msg) {    
+System.out.println("Message Received by Handler");
             gameClient.messageReceived(msg);
     }
     
@@ -48,7 +50,7 @@ public class ClientNetworkHandler implements MessageListener {
     public void send(AbstractMessage msg){
         client.send(msg);
     }
-    
+        
     // -------------------------------------------------------------------------
     public int getID(){
         if (this.ID == -1){

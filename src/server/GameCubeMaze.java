@@ -1,11 +1,13 @@
 
 package server;
 
+import com.jme3.network.serializing.Serializable;
+
 /*
  * THIS FILE SERVES AS THE GAME MAZE OBJECT - IT WILL HANDLE CREATION AND INITIALIZATION
  * OF THE 3D GAME MAZE.
  */
-
+@Serializable
 public class GameCubeMaze {
     private final int DEFAULTCHAMBERSIZE = 8;
     private byte [][][] theMaze;    // the maze, containing chambers
@@ -15,8 +17,8 @@ public class GameCubeMaze {
     // Constructor
     // -------------------------
 
-    public GameCubeMaze(int r, int c, int h) {
-        generate(r, c, h);  // generate maze
+    public GameCubeMaze(){
+        
     }
     
     public final void generate(int rows, int columns, int height) {

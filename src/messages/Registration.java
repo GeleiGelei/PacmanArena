@@ -2,6 +2,7 @@ package messages;
 
 import com.jme3.network.serializing.Serializer;
 import server.FieldData;
+import server.GameCubeMaze;
 
 /**
  *
@@ -15,5 +16,6 @@ public class Registration {
     public static void registerMessages() {
         Serializer.registerClass(NewClientMessage.class);
         Serializer.registerClass(FieldData.class);
+        Serializer.registerClass(GameCubeMaze.class);
     }
 }
