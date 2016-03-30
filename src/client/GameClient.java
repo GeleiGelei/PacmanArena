@@ -148,14 +148,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     private void initCam() {
         //flyCam.setEnabled(false);
     }
-
-    // -------------------------------------------------------------------------
-    // This client received its InitialClientMessage.
-//    private void initGame(NewClientMessage msg) {
-//        System.out.println("Received initial message from server. Initializing playfield.");
-//    }
-
-    // -------------------------------------------------------------------------
+    
     // Keyboard input
     private void initKeys() {
     }
@@ -179,22 +172,4 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         }
     }
 
-//    public void bind(Nifty nifty, Screen screen) {
-//        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//        this.nifty = nifty;
-//        this.screen = screen;
-//    }
-//
-//    public void onStartScreen() {
-//        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//        //this.screen = screen;
-//    }
-//
-//    public void onEndScreen() {
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//    }
-//    
-//    public void quitGame(){
-//        System.exit(0);
-//    }
 }
