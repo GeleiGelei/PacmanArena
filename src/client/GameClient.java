@@ -70,11 +70,11 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         this.ID = msg.ID;
         //
         //store coordinates
-        playfield = new ClientPlayfield(this);
-
-        for (FieldData fd : msg.field) {
-            playfield.addSphere(fd);
-        }
+//        playfield = new ClientPlayfield(this);
+//
+//        for (FieldData fd : msg.field) {
+//            playfield.addSphere(fd);
+//        }
     }
     // -------------------------------------------------------------------------
 
@@ -123,12 +123,6 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     // -------------------------------------------------------------------------
     private void initCam() {
         //flyCam.setEnabled(false);
-    }
-
-    // -------------------------------------------------------------------------
-    // This client received its InitialClientMessage.
-    private void initGame(NewClientMessage msg) {
-        System.out.println("Received initial message from server. Initializing playfield.");
     }
 
     // -------------------------------------------------------------------------
