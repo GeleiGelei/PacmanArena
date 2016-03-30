@@ -12,13 +12,18 @@ import com.jme3.light.DirectionalLight;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.network.Message;
+import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.post.filters.BloomFilter;
 import com.jme3.scene.Spatial;
 import com.jme3.shadow.DirectionalLightShadowRenderer;
 import com.jme3.system.AppSettings;
 import com.jme3.util.SkyFactory;
+import de.lessvoid.nifty.Nifty;
+import de.lessvoid.nifty.screen.Screen;
+import de.lessvoid.nifty.screen.ScreenController;
 import java.awt.Dimension;
+import java.awt.TextField;
 import java.awt.Toolkit;
 import messages.NewClientMessage;
 import server.FieldData;
@@ -28,6 +33,8 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     private int ID = -1;
     protected ClientNetworkHandler networkHandler;
     private GameCubeMaze cube;
+    Nifty nifty;
+    Screen screen;
 
     // -------------------------------------------------------------------------
     public static void main(String[] args) {
@@ -56,6 +63,8 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         networkHandler = new ClientNetworkHandler(this);
         //
         initGui();
+        initNifty();
+        
         initCam();
         initLightandShadow();
         initKeys();
@@ -70,11 +79,11 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         this.ID = msg.ID;
         //
         //store coordinates
-        playfield = new ClientPlayfield(this);
-
-        for (FieldData fd : msg.field) {
-            playfield.addSphere(fd);
-        }
+//        playfield = new ClientPlayfield(this);
+//
+//        for (FieldData fd : msg.field) {
+//            playfield.addSphere(fd);
+//        }
     }
     // -------------------------------------------------------------------------
 
@@ -90,6 +99,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         screen.width *= 0.75;
         screen.height *= 0.75;
         aps.setResolution(screen.width, screen.height);
+        aps.setTitle("3D Multiplayer PacMan");
         return (aps);
     }
 
@@ -97,6 +107,20 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     private void initGui() {
         setDisplayFps(true);
         setDisplayStatView(false);
+    }
+    
+    private void initNifty(){
+        NiftyJmeDisplay niftyDisplay = new NiftyJmeDisplay(
+                assetManager, inputManager, audioRenderer, guiViewPort);
+        
+        nifty = niftyDisplay.getNifty();
+        //nifty.fromXml("Interface/start.xml", "start");
+        guiViewPort.addProcessor(niftyDisplay);
+        nifty.fromXml("Interface/start.xml", "start", new MyStartScreen(this, nifty));
+        nifty.setDebugOptionPanelColors(false);
+        
+        TextField textField;
+        
     }
 
     // -------------------------------------------------------------------------
@@ -127,9 +151,9 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
 
     // -------------------------------------------------------------------------
     // This client received its InitialClientMessage.
-    private void initGame(NewClientMessage msg) {
-        System.out.println("Received initial message from server. Initializing playfield.");
-    }
+//    private void initGame(NewClientMessage msg) {
+//        System.out.println("Received initial message from server. Initializing playfield.");
+//    }
 
     // -------------------------------------------------------------------------
     // Keyboard input
@@ -154,4 +178,23 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
             }
         }
     }
+
+//    public void bind(Nifty nifty, Screen screen) {
+//        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        this.nifty = nifty;
+//        this.screen = screen;
+//    }
+//
+//    public void onStartScreen() {
+//        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        //this.screen = screen;
+//    }
+//
+//    public void onEndScreen() {
+//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//    
+//    public void quitGame(){
+//        System.exit(0);
+//    }
 }
