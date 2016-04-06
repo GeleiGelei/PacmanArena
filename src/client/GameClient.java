@@ -58,10 +58,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     @Override
     public void simpleInitApp() {
         setPauseOnLostFocus(false);
-        //
-        // CONNECT TO SERVER!
-        networkHandler = new ClientNetworkHandler(this);
-        //
+        
         initGui();
         initNifty();
         
@@ -118,9 +115,6 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         guiViewPort.addProcessor(niftyDisplay);
         nifty.fromXml("Interface/start.xml", "start", new MyStartScreen(this, nifty));
         nifty.setDebugOptionPanelColors(false);
-        
-        TextField textField;
-        
     }
 
     // -------------------------------------------------------------------------
@@ -159,6 +153,12 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         }
     }
 
+    //called after the user has clicked the 'connect' button in nifty gui
+    public void connect() {
+        // CONNECT TO SERVER!
+        networkHandler = new ClientNetworkHandler(this);
+    }
+    
     // -------------------------------------------------------------------------
     // message received
     public void messageReceived(Message msg) {
