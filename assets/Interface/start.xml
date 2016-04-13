@@ -34,13 +34,19 @@
         </layer>
     </screen>
     <screen id="hud" controller="client.MyStartScreen">
-        <layer id="" backgroundColor="#003f" childLayout="center">
-            ￼<panel width="100%" height="100%" childLayout="horizontal" backgroundColor="#ff0f">
-                <control name="button" id="QuitButton" visibleToMouse="true" height="50px" align="center" label="Start Game" valign="center">
+        <layer id="foreground" childLayout="center">
+            ￼<panel width="100%" height="100%" childLayout="horizontal">
+                <panel id="red" width="80%">
+                    <!-- Leave This blank for the actual game content -->
+                </panel>
+                
+                <panel id="green" backgroundColor="#0f08" width="20%" childLayout="vertical">
+                    <control name="label" id="HUDtext" width="100%" text="text" color="#fff" height="5%"/>
+                    
+                    <control name="label" id="Hf" width="100%" text="text" color="#fff" height="5%">
                         <interact onClick="startGame()"/>
                     </control>
-                <panel id="red" backgroundColor="#f008" width="80%"/>
-                <panel id="green" backgroundColor="#0f08" width="20%"/>
+                </panel>
                 
              </panel>
         </layer>
