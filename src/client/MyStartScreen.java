@@ -1,3 +1,4 @@
+
 package client;
 
 import de.lessvoid.nifty.Nifty;
@@ -46,10 +47,10 @@ public class MyStartScreen extends AbstractAppState implements ScreenController{
     }
     
     
-    // This officially starts the actual game
-    public void startGame(){
-        nifty.exit();
-    }
+//    // This officially starts the actual game
+//    public void startGame(){
+//        nifty.exit();
+//    }
 
     public void bind(Nifty nifty, Screen screen) {
         this.nifty = nifty;
@@ -91,5 +92,4 @@ public class MyStartScreen extends AbstractAppState implements ScreenController{
             System.out.println("Time: " + tpf);
         }
     }
-    
 }
