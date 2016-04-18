@@ -15,6 +15,7 @@ import java.util.logging.Logger;
  */
 
 public class Ghost extends Node implements Character {
+    private String characterName;
     private boolean isVulnerable; // changes when ghost becomes 'blue'
     private Vector3f location;
     private Vector3f spawnLocation;
@@ -96,5 +97,9 @@ public class Ghost extends Node implements Character {
 
     public String getCharacterClass() {
         return Parser.parseForClassName(this.getClass().toString());
+    }
+
+    public void setCharacterName(String name) {
+        this.characterName = name;
     }
 }

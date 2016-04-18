@@ -1,5 +1,6 @@
 package client;
 
+import messages.Player;
 import server.GameCubeMaze;
 import com.jme3.app.DebugKeysAppState;
 import com.jme3.app.SimpleApplication;
@@ -25,16 +26,17 @@ import de.lessvoid.nifty.screen.ScreenController;
 import java.awt.Dimension;
 import java.awt.TextField;
 import java.awt.Toolkit;
+import messages.NewClientFinalize;
 import messages.NewClientMessage;
-import server.FieldData;
 
 public class GameClient extends SimpleApplication implements ClientNetworkListener, ActionListener {
-
-    private int ID = -1;
+    
     protected ClientNetworkHandler networkHandler;
     private GameCubeMaze cube;
     Nifty nifty;
     Screen screen;
+    private Player player; 
+    public static GameClient app;
 
     // -------------------------------------------------------------------------
     public static void main(String[] args) {
@@ -42,7 +44,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         //
         AppSettings aps = getAppSettings();
         //
-        GameClient app = new GameClient();
+        app = new GameClient();
         app.setShowSettings(false);
         app.setSettings(aps);
         app.start();
@@ -59,6 +61,11 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     public void simpleInitApp() {
         setPauseOnLostFocus(false);
         
+        this.player = null;
+        
+        //creates a new ClientNetworkHandler and connects to the server
+        connect();
+        
         initGui();
         initNifty();
         
@@ -70,17 +77,23 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     // -------------------------------------------------------------------------
     // This client received its InitialClientMessage.
     private void initGame(NewClientMessage msg) {
-        System.out.println("Received initial message from server. Initializing playfield.");
-        //
-        // store ID
-        this.ID = msg.ID;
-        //
-        //store coordinates
-//        playfield = new ClientPlayfield(this);
-//
-//        for (FieldData fd : msg.field) {
-//            playfield.addSphere(fd);
-//        }
+        for(Player p : msg.gameWorldData) {
+            if(p.getId() == msg.ID) {
+                this.player = p;
+                break;
+            }
+        }
+        
+        if(this.player.getCharacter() != null) {
+            System.out.println("Player registered: " + this.player.getName() + " who is " + this.player.getCharacter().getCharacterClass());
+        }
+    }
+    
+    public void initPlayer(String playerName, Character playerCharacter) {
+        NewClientFinalize ncf = new NewClientFinalize(this.player.getId(), playerName, playerCharacter);
+        
+        //send over the new player info
+        networkHandler.send(ncf);
     }
     // -------------------------------------------------------------------------
 
@@ -164,10 +177,16 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     public void messageReceived(Message msg) {
         if (msg instanceof NewClientMessage) {
             NewClientMessage ncm = (NewClientMessage) msg;
-            if (this.ID == -1) {
-                //starting the game fresh
-                initGame(ncm);
+            if(ncm.getErr().length() == 0) {
+                //will be called twice - once for empty player object, once with real data
+                initGame(ncm); 
             } else {
+                //exit game, we can't connect
+                if(this.player == null) {
+                    System.out.println(ncm.getErr());
+                    app.stop();
+                    System.exit(1);
+                }
             }
         }
     }

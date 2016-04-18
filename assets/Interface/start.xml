@@ -12,7 +12,7 @@
             </panel>
             
             <panel id="GPanel2" height="15%" width="75%" align="center" childLayout="center">
-                <control name="imageSelect" id="#imageSelect" imageHeight="51px" imageList="Interface/clyde.png,Interface/inky.png,Interface/blinky.png,Interface/pinky.png" width="51px" imageWidth="51px"/>
+                <control name="imageSelect" id="imageSelect" imageHeight="51px" imageList="Interface/clyde.png,Interface/inky.png,Interface/blinky.png,Interface/pinky.png" width="51px" imageWidth="51px"/>
             </panel>
             <panel id="GPanel3" height="8%" width="75%" align="center" childLayout="center"/>
             <panel id="GPanel4" height="8%" width="50%" align="center" childLayout="center">

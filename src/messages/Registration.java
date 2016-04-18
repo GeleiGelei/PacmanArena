@@ -1,7 +1,6 @@
 package messages;
 
 import com.jme3.network.serializing.Serializer;
-import server.FieldData;
 
 /**
  *
@@ -14,6 +13,6 @@ public class Registration {
     // referred to in messages.
     public static void registerMessages() {
         Serializer.registerClass(NewClientMessage.class);
-        Serializer.registerClass(FieldData.class);
+        Serializer.registerClass(Player.class);
     }
 }

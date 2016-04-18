@@ -14,6 +14,7 @@ import com.jme3.scene.shape.Sphere;
 
 public class Pacman extends Node implements Character {
     private int lives;
+    private String characterName;
     private Vector3f location;
     private Vector3f spawnLocation;
     private int movementSpeed;
@@ -27,6 +28,7 @@ public class Pacman extends Node implements Character {
     private int radialSamples = 256;
     
     public Pacman() {
+        this.name = "";
         this.lives = 3;
         this.location = new Vector3f(0, 0, 0);
         this.spawnLocation = new Vector3f(0, 0, 0);
@@ -81,4 +83,11 @@ public class Pacman extends Node implements Character {
         return Parser.parseForClassName(this.getClass().toString());
     }
     
+    public void setCharacterName(String name) {
+        this.name = "Pacman"; //always the same name for this
+    }
+
+    public void setCharacterName() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

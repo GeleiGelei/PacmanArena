@@ -2,6 +2,7 @@
 package client;
 
 import de.lessvoid.nifty.Nifty;
+import de.lessvoid.nifty.controls.ImageSelect;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
 import sun.applet.Main;
@@ -24,9 +25,53 @@ public class MyStartScreen implements ScreenController{
     }
     
     public void nextScreen(String nextScreen){
-        nifty.gotoScreen(nextScreen);
+        //from start screen to start of game
+        if(nextScreen.equals("hud")) {
+            initPlayerData();
+        }
+        
+        //nifty.gotoScreen(nextScreen);
+    }
+    
+    public void initPlayerData() {
+        System.out.println("initPlayerData called");
+        
         TextField text = screen.findNiftyControl("input", TextField.class);
         inputName = text.getText();
+        
+        ImageSelect gameChar = screen.findNiftyControl("imageSelect", ImageSelect.class);
+        int idx = gameChar.getSelectedImageIndex();
+        
+        Character selected;
+        
+        switch(idx) {
+            case 0: //pacman
+                selected = new Pacman();
+                selected.setCharacterName("Pacman");
+                break;
+            case 1: //clyde
+                selected = new Ghost();
+                selected.setCharacterName("Clyde");
+                break;
+            case 2: //inky
+                selected = new Ghost();
+                selected.setCharacterName("Inky");
+                break;
+            case 3: //blinky
+                selected = new Ghost();
+                selected.setCharacterName("Blinky");
+                break;
+            case 4: //pinky 
+                selected = new Ghost();
+                selected.setCharacterName("Pinky");
+                break;
+            default: System.out.println("Error");
+                selected = null;
+        }
+        
+        System.out.println("We got this far...");
+        //creates an instance of NewClientFinalize and sends message to server
+        //main.initPlayer(inputName, selected);
     }
     
     public void startGame(){

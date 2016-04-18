@@ -3,22 +3,33 @@ package messages;
 import com.jme3.network.AbstractMessage;
 import com.jme3.network.serializing.Serializable;
 import java.util.LinkedList;
-import server.FieldData;
 
 @Serializable
 public class NewClientMessage extends AbstractMessage {
 
     public int ID;
-    public LinkedList<FieldData> maze;
+    public String err;
+    public LinkedList<Player> gameWorldData;
 
     // -------------------------------------------------------------------------
     public NewClientMessage() {
     }
 
     // -------------------------------------------------------------------------
-    public NewClientMessage(int ID, LinkedList<FieldData> maze) {
+    public NewClientMessage(int ID, LinkedList<Player> gameWorldData) {
         super();
         this.ID = ID;
-        this.maze = maze;
+        this.gameWorldData = gameWorldData;
+        this.err = "";
+    }
+    
+    //sets the error string 
+    public void setErr(String err) {
+        this.err = err;
+    } 
+    
+    //returns the error string; will be empty by default unless there is an error
+    public String getErr() {
+        return this.err;
     }
 }

@@ -17,10 +17,12 @@ public class ServerNetworkHandler implements MessageListener, ConnectionListener
     public static int SERVERPORT = 6143;
     Server server;
     ServerNetworkListener gameServer;
+    GameWorldData gwd;
 
     // -------------------------------------------------------------------------
-    public ServerNetworkHandler(GameServer l) {
+    public ServerNetworkHandler(GameServer l, GameWorldData gwd) {
         gameServer = l;
+        this.gwd = gwd;
         try {
             server = Network.createServer(SERVERPORT);
             Registration.registerMessages();
@@ -73,6 +75,11 @@ public class ServerNetworkHandler implements MessageListener, ConnectionListener
 
     // -------------------------------------------------------------------------
     public void connectionRemoved(Server server, HostedConnection conn) {
-        // TODO
+        //remove the player from the game
+        if(this.gwd.removePlayer(conn.getId())) {
+            System.out.println("Player " + conn.getId() + " disconnected from the server");
+        } else {
+            System.out.println("Blocked new player from joining; server is full.");
+        }
     }
 }

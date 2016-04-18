@@ -4,11 +4,13 @@
 package server;
 
 import com.jme3.network.Message;
+import messages.NewClientFinalize;
 import messages.NewClientMessage;
+import messages.Player;
 public class GameServer implements ServerNetworkListener {
 
     ServerNetworkHandler networkHandler;
-    PlayField playfield;
+    GameWorldData gameWorld;
     GameCubeMaze cube;
 
     // -------------------------------------------------------------------------
@@ -25,8 +27,9 @@ public class GameServer implements ServerNetworkListener {
 
     // -------------------------------------------------------------------------
     public GameServer() {
-        networkHandler = new ServerNetworkHandler(this);
-        playfield = new PlayField();
+        gameWorld = new GameWorldData();
+        networkHandler = new ServerNetworkHandler(this, gameWorld);
+        
         initCube();
     }
 
@@ -40,19 +43,25 @@ public class GameServer implements ServerNetworkListener {
     // -------------------------------------------------------------------------
     // Methods required by ServerNetworkHandler
     public void messageReceived(Message msg) {
-
+        if(msg instanceof NewClientFinalize) {
+            System.out.println("Recieved newclientfinalize message");
+            //player intends to update his information
+            gameWorld.finalizePlayer((NewClientFinalize)msg);
+            NewClientMessage resp = new NewClientMessage(((NewClientFinalize)msg).getId(), gameWorld.data);
+            networkHandler.sendToClient(((NewClientFinalize)msg).getId(), resp);
+        }
     }
 
     // -------------------------------------------------------------------------
     public Message newConnectionReceived(int connectionID) throws Exception {
-        // put player on random playfield
-        boolean ok = playfield.addElement(connectionID);
-        if (!ok) {
-            System.out.println("Max number of players!!");
-            throw new Exception("Max number of players exceeded.");
+        // put player on random gameWorld
+        Player temp = gameWorld.addElement(connectionID);
+        
+        // send entire gameWorld to new client
+        NewClientMessage iniCM = new NewClientMessage(connectionID, gameWorld.data);
+        if (temp == null) {
+            iniCM.setErr("Yikes! The server is already full... Please try connecting later.");
         }
-        // send entire playfield to new client
-        NewClientMessage iniCM = new NewClientMessage(connectionID, playfield.data);
         return (iniCM);
     }
 }

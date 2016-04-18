@@ -1,12 +1,17 @@
 
-package client;
+package messages;
+
+import client.Character;
+import com.jme3.network.AbstractMessage;
+import com.jme3.network.serializing.Serializable;
 
 /*
- * HOLDS ALL PLAYER DATA/METADATA. THIS CLASS IS WHAT WE COMMUNICATE BETWEEN 
- * SERVER AND CLIENT. THIS INCLUDES ROLE, POINTS, NAME, LIVES, OTHER INFO, ETC. 
+ * The data for a single player - is a part of the overall list created in 
+ * GameWorldData.java which holds a list of all Player objects that gets 
+ * passed back and forth between the server 
  */
-
-public class Player {
+@Serializable
+public class Player extends AbstractMessage {
     /*
      * Player Data 
      */
@@ -26,6 +31,10 @@ public class Player {
         this.name = "";
         this.points = 0;
         this.c = null;
+    }
+
+    public Player() {
+        //nothing here
     }
     
     // sets the id of the player 

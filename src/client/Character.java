@@ -38,4 +38,7 @@ public interface Character {
     
     // returns the class of the instantiated character - Ghost or Pacman
     public String getCharacterClass();
+    
+    // sets the character name 
+    public void setCharacterName(String name);
 }
