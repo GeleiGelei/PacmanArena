@@ -2,6 +2,7 @@
 package client;
 
 import com.jme3.math.Vector3f;
+//import com.jme3.network.serializing.Serializable;
 
 /*
  * INTERFACE FOR GHOST/PACMAN DATA. THIS WILL HOLD ALL 'PHYSICAL' PLAYER DATA 

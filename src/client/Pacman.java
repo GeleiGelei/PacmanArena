@@ -3,6 +3,7 @@ package client;
 
 import CodeUtils.Parser;
 import com.jme3.math.Vector3f;
+import com.jme3.network.serializing.Serializable;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Sphere;
@@ -12,6 +13,7 @@ import com.jme3.scene.shape.Sphere;
  * OF THE PACMAN OBJECT (GEOMETRY, MATERIALS, CONTROLS, LIVES, ETC)
  */
 
+@Serializable
 public class Pacman extends Node implements Character {
     private int lives;
     private String characterName;
@@ -35,7 +37,7 @@ public class Pacman extends Node implements Character {
         this.movementSpeed = 5; // a random value, may need to be adjusted later
         
         // initialize geometry, materials, etc.
-        init();
+        //init();
     }
     
     public void init() {

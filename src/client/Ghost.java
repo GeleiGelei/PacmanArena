@@ -3,6 +3,7 @@ package client;
 
 import CodeUtils.Parser;
 import com.jme3.math.Vector3f;
+import com.jme3.network.serializing.Serializable;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Cylinder;
@@ -14,6 +15,7 @@ import java.util.logging.Logger;
  * OF THE GHOST OBJECT (GEOMETRIES, MATERIALS, STATS, CONTROLS, ETC.)
  */
 
+@Serializable
 public class Ghost extends Node implements Character {
     private String characterName;
     private boolean isVulnerable; // changes when ghost becomes 'blue'

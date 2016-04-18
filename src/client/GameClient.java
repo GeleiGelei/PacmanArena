@@ -10,13 +10,17 @@ import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
+import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import com.jme3.network.Message;
 import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.post.filters.BloomFilter;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.shape.Box;
 import com.jme3.shadow.DirectionalLightShadowRenderer;
 import com.jme3.system.AppSettings;
 import com.jme3.util.SkyFactory;
@@ -35,8 +39,13 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     private GameCubeMaze cube;
     Nifty nifty;
     Screen screen;
+
     private Player player; 
     public static GameClient app;
+
+    Box b = new Box(Vector3f.ZERO, 1, 1, 1);
+    Geometry geom = new Geometry("Box", b);
+    private MyStartScreen startScreen;
 
     // -------------------------------------------------------------------------
     public static void main(String[] args) {
@@ -48,6 +57,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         app.setShowSettings(false);
         app.setSettings(aps);
         app.start();
+        
     }
 
     // -------------------------------------------------------------------------
@@ -69,9 +79,18 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         initGui();
         initNifty();
         
-        initCam();
+        // This just runs a simple cube rotating. (Replace with the actual pacman game)
+        testRun();
+        //initCam();
         initLightandShadow();
         initKeys();
+    }
+    
+    public void testRun(){
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        mat.setColor("Color", ColorRGBA.Blue);
+        geom.setMaterial(mat);
+        rootNode.attachChild(geom);
     }
 
     // -------------------------------------------------------------------------
@@ -95,11 +114,13 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         //send over the new player info
         networkHandler.send(ncf);
     }
+
+    
     // -------------------------------------------------------------------------
 
     public void SimpleUpdate(float tpf) {
     }
-
+    
     // -------------------------------------------------------------------------
     // Initialization Methods
     // -------------------------------------------------------------------------
@@ -115,19 +136,23 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
 
     // -------------------------------------------------------------------------
     private void initGui() {
-        setDisplayFps(true);
+        setDisplayFps(false);
         setDisplayStatView(false);
     }
     
     private void initNifty(){
+        startScreen = new MyStartScreen(this,nifty);
+        stateManager.attach(startScreen);
+        
         NiftyJmeDisplay niftyDisplay = new NiftyJmeDisplay(
                 assetManager, inputManager, audioRenderer, guiViewPort);
         
         nifty = niftyDisplay.getNifty();
         //nifty.fromXml("Interface/start.xml", "start");
         guiViewPort.addProcessor(niftyDisplay);
-        nifty.fromXml("Interface/start.xml", "start", new MyStartScreen(this, nifty));
+        nifty.fromXml("Interface/start.xml", "start", startScreen);
         nifty.setDebugOptionPanelColors(false);
+
     }
 
     // -------------------------------------------------------------------------
@@ -153,7 +178,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
 
     // -------------------------------------------------------------------------
     private void initCam() {
-        //flyCam.setEnabled(false);
+        flyCam.setEnabled(true);
     }
     
     // Keyboard input
@@ -190,5 +215,10 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
             }
         }
     }
-
+    
+    
+    @Override
+    public void simpleUpdate(float tpf) {
+        geom.rotate(0, tpf, 0);
+    }
 }

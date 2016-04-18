@@ -31,6 +31,7 @@ public class GameServer implements ServerNetworkListener {
         networkHandler = new ServerNetworkHandler(this, gameWorld);
         
         initCube();
+        System.out.println("test");
     }
 
 

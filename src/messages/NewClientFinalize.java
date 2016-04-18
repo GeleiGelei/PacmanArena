@@ -14,7 +14,7 @@ import com.jme3.network.serializing.Serializable;
 public class NewClientFinalize extends AbstractMessage {
     private int clientId;
     private String name; 
-    private client.Character gameCharacter;
+    transient private client.Character gameCharacter;
     public NewClientFinalize() {
         //nothing here
     }
