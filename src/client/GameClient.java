@@ -11,6 +11,7 @@ import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import com.jme3.network.Message;
 import com.jme3.niftygui.NiftyJmeDisplay;
@@ -30,6 +31,7 @@ import java.awt.TextField;
 import java.awt.Toolkit;
 import messages.NewClientMessage;
 import server.FieldData;
+import com.jme3.input.FlyByCamera;
 
 public class GameClient extends SimpleApplication implements ClientNetworkListener, ActionListener {
 
@@ -52,6 +54,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         app.setShowSettings(false);
         app.setSettings(aps);
         app.start();
+        
     }
 
     // -------------------------------------------------------------------------
@@ -70,8 +73,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         
         // This just runs a simple cube rotating. (Replace with the actual pacman game)
         testRun();
-
-        initCam();
+        //initCam();
         initLightandShadow();
         initKeys();
     }
@@ -98,6 +100,8 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
 //            playfield.addSphere(fd);
 //        }
     }
+
+    
     // -------------------------------------------------------------------------
 
     public void SimpleUpdate(float tpf) {
@@ -159,7 +163,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
 
     // -------------------------------------------------------------------------
     private void initCam() {
-        //flyCam.setEnabled(false);
+        flyCam.setEnabled(true);
     }
     
     // Keyboard input
@@ -191,10 +195,9 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         }
     }
     
+    
     @Override
     public void simpleUpdate(float tpf) {
         geom.rotate(0, tpf, 0);
     }
-
-
 }
