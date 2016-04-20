@@ -27,9 +27,11 @@ public class MyStartScreen extends AbstractAppState implements ScreenController{
     private Screen screen;
     private GameClient main;
     private String inputName;
+    public static String connectedPlayers;
     private int indexOfSelectedCharacter;
     private SimpleApplication app;
     float timer;
+    
     
     String[] charImages = {"Interface/pacman.png","Interface/clyde.png","Interface/inky.png","Interface/blinky.png","Interface/pinky.png"};
     
@@ -38,6 +40,7 @@ public class MyStartScreen extends AbstractAppState implements ScreenController{
         this.nifty = nifty;
         this.main = main;
         inputName = "";
+        connectedPlayers = "";
         indexOfSelectedCharacter = 0;
         
     }
@@ -103,7 +106,8 @@ public class MyStartScreen extends AbstractAppState implements ScreenController{
     public void onStartScreen() {
         if(screen.getScreenId().equals("start")) {
             System.out.println("=== on the start screen ===");
-
+            connectedPlayers = nifty.getScreen("start").findNiftyControl("playersConnected", Label.class).getText();
+            //System.out.println("Connected players = " + connectedPlayers);
         }
         if(screen.getScreenId().equals("hud")){
             System.out.println("=== on the HUD screen ===");

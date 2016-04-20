@@ -39,9 +39,10 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     private GameCubeMaze cube;
     Nifty nifty;
     Screen screen;
-
+    Spatial sky;
     private Player player; 
     public static GameClient app;
+    private int ID = -1;
 
     Box b = new Box(Vector3f.ZERO, 1, 1, 1);
     Geometry geom = new Geometry("Box", b);
@@ -73,17 +74,18 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         
         this.player = null;
         
-        //creates a new ClientNetworkHandler and connects to the server
-        connect();
-        
+        // Initialize the sky, lights, keys, and NiftyGui
+        createSkybg();
+        initLightandShadow();
+        initKeys();
         initGui();
         initNifty();
         
+        //creates a new ClientNetworkHandler and connects to the server
+        connect();
+
         // This just runs a simple cube rotating. (Replace with the actual pacman game)
         testRun();
-        //initCam();
-        initLightandShadow();
-        initKeys();
     }
     
     public void testRun(){
@@ -96,6 +98,10 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     // -------------------------------------------------------------------------
     // This client received its InitialClientMessage.
     private void initGame(NewClientMessage msg) {
+        
+        this.ID = msg.ID;
+        System.out.println("My ID: " + this.ID);
+        
         for(Player p : msg.gameWorldData) {
             if(p.getId() == msg.ID) {
                 this.player = p;
@@ -154,6 +160,11 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         nifty.setDebugOptionPanelColors(false);
 
     }
+    
+    public void createSkybg(){
+        sky = SkyFactory.createSky(assetManager, "Interface/spaceBg.jpg", true);
+        rootNode.attachChild(sky);
+    }
 
     // -------------------------------------------------------------------------
     private void initLightandShadow() {
@@ -177,9 +188,6 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     }
 
     // -------------------------------------------------------------------------
-    private void initCam() {
-        flyCam.setEnabled(true);
-    }
     
     // Keyboard input
     private void initKeys() {

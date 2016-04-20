@@ -39,7 +39,7 @@ public class Ghost extends Node implements Character {
         this.movementSpeed = 3; // a random value, may need to be adjusted later
      
         // initialize geometry, materials, etc.
-        init();
+        //init();
     }
     
     public void init() {

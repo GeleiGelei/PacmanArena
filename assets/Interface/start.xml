@@ -13,7 +13,9 @@
             <panel id="GPanel2" height="15%" width="75%" align="center" childLayout="center">
                 <control name="imageSelect" id="imS" imageHeight="51px" imageList="Interface/pacman.png,Interface/clyde.png,Interface/inky.png,Interface/blinky.png,Interface/pinky.png" width="51px" imageWidth="51px"/>
             </panel>
-            <panel id="GPanel3" height="8%" width="75%" align="center" childLayout="center"/>
+            <panel id="GPanel3" height="8%" width="75%" align="center" childLayout="center">
+                <control name="label" id="playersConnected" text="0 Players connected" height="38px" font="aurulent-sans-16.fnt" width="180px" align="center"/>
+            </panel>
             <panel id="GPanel4" height="8%" width="50%" align="center" childLayout="center">
                 <control name="textfield" id="input" height="38px" width="295px" align="right" y="-1px" x="-1px"/>
                 <control name="label" id="GLabel5" text="Enter your name:" height="38px" font="aurulent-sans-16.fnt" width="180px" align="left" textLineHeight="38px" y="-1px" x="-1px"/>
@@ -45,6 +47,9 @@
                     <image id="HUDcharImage" filename="Interface/pacman.png" height="51px" width="51px" align="center"/>
                     
                     <control name="label" id="timer" width="100%" text="text" color="#fff" height="10%"/>
+                    
+                    <control name="label" id="lives" width="100%" text="Lives remaining: 3" color="#fff" height="10%"/>
+                    <control name="label" id="Points" width="100%" text="Points: 100" color="#fff" height="10%"/>
                     
                 </panel>
                 
