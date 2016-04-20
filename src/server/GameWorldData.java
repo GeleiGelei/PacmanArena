@@ -28,7 +28,7 @@ public class GameWorldData {
         Player temp = null;
         
         //check to see if the server has the max number of players 
-        if(data.size() == 1) {
+        if(data.size() == 2) {
             return temp;
         }
         

@@ -45,6 +45,7 @@ public class ServerNetworkHandler implements MessageListener, ConnectionListener
         int connID = conn.getId();
         System.out.println("Client " + connID + " connected");
         Message m;
+        
         try {
             // gameServer.newConnectionReceived throws an Exception
             // if the connection should not be accepted.
