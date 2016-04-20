@@ -78,4 +78,8 @@ public class GameWorldData {
             }
         }
     }
+    
+    public LinkedList getData() {
+        return this.data;
+    }
 }

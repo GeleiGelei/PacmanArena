@@ -1,7 +1,5 @@
 package messages;
 
-import client.Ghost;
-import client.Pacman;
 import com.jme3.network.serializing.Serializer;
 
 /**
@@ -17,8 +15,6 @@ public class Registration {
         Serializer.registerClass(NewClientMessage.class);
         Serializer.registerClass(Player.class);
         Serializer.registerClass(NewClientFinalize.class);
-        Serializer.registerClass(Pacman.class);
-        Serializer.registerClass(Ghost.class);
-        
+        Serializer.registerClass(PlayerDisconnectMessage.class);
     }
 }

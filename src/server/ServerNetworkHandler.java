@@ -10,6 +10,7 @@ import com.jme3.network.Server;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import messages.PlayerDisconnectMessage;
 import messages.Registration;
 
 public class ServerNetworkHandler implements MessageListener, ConnectionListener {
@@ -79,6 +80,9 @@ public class ServerNetworkHandler implements MessageListener, ConnectionListener
         //remove the player from the game
         if(this.gwd.removePlayer(conn.getId())) {
             System.out.println("Player " + conn.getId() + " disconnected from the server");
+            PlayerDisconnectMessage pdm = new PlayerDisconnectMessage(conn.getId());
+            pdm.setNumPlayers(gwd.getData().size());
+            broadcast(pdm);
         } else {
             System.out.println("Blocked new player from joining; server is full.");
         }

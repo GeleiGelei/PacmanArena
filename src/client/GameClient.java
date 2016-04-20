@@ -25,6 +25,7 @@ import com.jme3.shadow.DirectionalLightShadowRenderer;
 import com.jme3.system.AppSettings;
 import com.jme3.util.SkyFactory;
 import de.lessvoid.nifty.Nifty;
+import de.lessvoid.nifty.controls.Label;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
 import java.awt.Dimension;
@@ -32,6 +33,7 @@ import java.awt.TextField;
 import java.awt.Toolkit;
 import messages.NewClientFinalize;
 import messages.NewClientMessage;
+import messages.PlayerDisconnectMessage;
 
 public class GameClient extends SimpleApplication implements ClientNetworkListener, ActionListener {
     
@@ -125,9 +127,9 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         }
         
         //update player count on the start screen 
-//        if(this.nifty.getCurrentScreen().getScreenId().equals("start")) {
-//            
-//        }
+        if(this.nifty.getCurrentScreen().getScreenId().equals("start")) {
+            nifty.getScreen("start").findNiftyControl("playersConnected", Label.class).setText(msg.gameWorldData.size() + " players connected");
+        }
     }
     
     public void initPlayer(String playerName, String playerCharacter, String playerCharacterName) {
@@ -236,6 +238,12 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
                     app.stop();
                     System.exit(1);
                 }
+            }
+        } else if(msg instanceof PlayerDisconnectMessage) {
+            //update player count on the start screen 
+            if(this.nifty.getCurrentScreen().getScreenId().equals("start")) {
+                PlayerDisconnectMessage pdm = (PlayerDisconnectMessage)msg;
+                nifty.getScreen("start").findNiftyControl("playersConnected", Label.class).setText(pdm.getNumPlayers() + " players connected");
             }
         }
     }

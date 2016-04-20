@@ -1,9 +1,6 @@
 
 package messages;
 
-import client.Character;
-import client.Ghost;
-import client.Pacman;
 import com.jme3.math.Vector3f;
 import com.jme3.network.AbstractMessage;
 import com.jme3.network.serializing.Serializable;

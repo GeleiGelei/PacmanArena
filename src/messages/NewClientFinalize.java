@@ -1,8 +1,6 @@
 
 package messages;
 
-import client.Ghost;
-import client.Pacman;
 import com.jme3.network.AbstractMessage;
 import com.jme3.network.serializing.Serializable;
 

@@ -14,7 +14,7 @@
                 <control name="imageSelect" id="imS" imageHeight="51px" imageList="Interface/pacman.png,Interface/clyde.png,Interface/inky.png,Interface/blinky.png,Interface/pinky.png" width="51px" imageWidth="51px"/>
             </panel>
             <panel id="GPanel3" height="8%" width="75%" align="center" childLayout="center">
-                <control name="label" id="playersConnected" text="0 Players connected" height="38px" font="aurulent-sans-16.fnt" width="180px" align="center"/>
+                <control name="label" id="playersConnected" text="" height="38px" font="aurulent-sans-16.fnt" width="180px" align="center"/>
             </panel>
             <panel id="GPanel4" height="8%" width="50%" align="center" childLayout="center">
                 <control name="textfield" id="input" height="38px" width="295px" align="right" y="-1px" x="-1px"/>
