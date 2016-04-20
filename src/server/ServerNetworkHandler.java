@@ -64,7 +64,7 @@ public class ServerNetworkHandler implements MessageListener, ConnectionListener
             HostedConnection hc = server.getConnection(ID);
             server.broadcast(Filters.in(hc), msg);
         } catch (Exception e) {
-            System.out.println("ERROR in sendToClient()");
+            System.out.println("ERROR in sendToClient() : " + e.getMessage());
         }
     }
 

@@ -7,6 +7,7 @@ import com.jme3.network.serializing.Serializable;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Cylinder;
+import java.lang.annotation.Annotation;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,7 +40,7 @@ public class Ghost extends Node implements Character {
         this.movementSpeed = 3; // a random value, may need to be adjusted later
      
         // initialize geometry, materials, etc.
-        init();
+        //init();
     }
     
     public void init() {
@@ -103,5 +104,17 @@ public class Ghost extends Node implements Character {
 
     public void setCharacterName(String name) {
         this.characterName = name;
+    }
+
+    public Class serializer() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public short id() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public Class<? extends Annotation> annotationType() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

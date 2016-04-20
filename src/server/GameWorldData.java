@@ -69,8 +69,11 @@ public class GameWorldData {
     public void finalizePlayer(NewClientFinalize pData) {
         for(Player p : data) {
             if(p.getId() == pData.getId()) {
+                System.out.println("Setting player character to: " + pData.getGameChar());
                 p.setName(pData.getName());
                 p.setCharacter(pData.getGameChar());
+                p.setCharacterName(pData.getGameCharName());
+                p.setMovementSpeed(pData.getMovementSpeed());
                 break;
             }
         }

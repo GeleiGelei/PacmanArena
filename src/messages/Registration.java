@@ -19,5 +19,6 @@ public class Registration {
         Serializer.registerClass(NewClientFinalize.class);
         Serializer.registerClass(Pacman.class);
         Serializer.registerClass(Ghost.class);
+        
     }
 }

@@ -97,20 +97,36 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     // This client received its InitialClientMessage.
     private void initGame(NewClientMessage msg) {
         for(Player p : msg.gameWorldData) {
+            
             if(p.getId() == msg.ID) {
-                this.player = p;
-                break;
+                if(this.player != null) {
+                    if(this.player.getId() == msg.ID) {
+                        this.player = p;
+                        System.out.println("Updated player: " + this.player.getId());
+                        break;
+                    }
+                } else {
+                    this.player = p;
+                    System.out.println("New player: " + this.player.getId());
+                    break;
+                }
+                
             }
         }
         
         if(this.player.getCharacter() != null) {
-            System.out.println("Player registered: " + this.player.getName() + " who is " + this.player.getCharacter().getCharacterClass());
+            System.out.println("Player finalized: " + this.player.getName() + " who is " + this.player.getCharacter() + " named " + this.player.getCharacterName());
         }
+        
+        //update player count on the start screen 
+//        if(this.nifty.getCurrentScreen().getScreenId().equals("start")) {
+//            
+//        }
     }
     
-    public void initPlayer(String playerName, Character playerCharacter) {
-        NewClientFinalize ncf = new NewClientFinalize(this.player.getId(), playerName, playerCharacter);
-        
+    public void initPlayer(String playerName, String playerCharacter, String playerCharacterName) {
+        NewClientFinalize ncf = new NewClientFinalize(this.player.getId(), playerName, playerCharacter, playerCharacterName);
+       
         //send over the new player info
         networkHandler.send(ncf);
     }

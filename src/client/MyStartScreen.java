@@ -54,40 +54,40 @@ public class MyStartScreen extends AbstractAppState implements ScreenController{
     }
     
     public void initPlayerData() {
-        System.out.println("initPlayerData called");
+        inputName = nifty.getScreen("start").findNiftyControl("input", TextField.class).getText();
         
-        TextField text = screen.findNiftyControl("input", TextField.class);
-        inputName = text.getText();
-        
-        Character selected;
+        String selected;
+        String selectedName;
         
         switch(indexOfSelectedCharacter) {
             case 0: //pacman
-                selected = new Pacman();
-                selected.setCharacterName("Pacman");
+                selected = "Pacman";
+                selectedName = "Pacman";
                 break;
             case 1: //clyde
-                selected = new Ghost();
-                selected.setCharacterName("Clyde");
+                selected = "Ghost";
+                selectedName = "Clyde";
                 break;
             case 2: //inky
-                selected = new Ghost();
-                selected.setCharacterName("Inky");
+                selected = "Ghost";
+                selectedName = "Inky";
                 break;
             case 3: //blinky
-                selected = new Ghost();
-                selected.setCharacterName("Blinky");
+                selected = "Ghost";
+                selectedName = "Blinky";
                 break;
             case 4: //pinky 
-                selected = new Ghost();
-                selected.setCharacterName("Pinky");
+                selected = "Ghost";
+                selectedName = "Pinky";
                 break;
             default: System.out.println("Error");
                 selected = null;
+                selectedName = null;
         }
         
+        System.out.println("inputName: " + inputName);
         //creates an instance of NewClientFinalize and sends message to server
-        main.initPlayer(inputName, selected);
+        main.initPlayer(inputName, selected, selectedName);
     }
      
 //    // This officially starts the actual game

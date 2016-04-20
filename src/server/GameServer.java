@@ -49,7 +49,7 @@ public class GameServer implements ServerNetworkListener {
             //player intends to update his information
             gameWorld.finalizePlayer((NewClientFinalize)msg);
             NewClientMessage resp = new NewClientMessage(((NewClientFinalize)msg).getId(), gameWorld.data);
-            networkHandler.sendToClient(((NewClientFinalize)msg).getId(), resp);
+            networkHandler.broadcast(resp);
         }
     }
 

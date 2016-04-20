@@ -3,10 +3,12 @@ package client;
 
 import CodeUtils.Parser;
 import com.jme3.math.Vector3f;
+import com.jme3.network.AbstractMessage;
 import com.jme3.network.serializing.Serializable;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Sphere;
+import java.lang.annotation.Annotation;
 
 /*
  * THIS IS THE ALL-IMPORTANT PACMAN CLASS. THIS HANDLES THE CREATION AND INITIALIZATION
@@ -90,6 +92,18 @@ public class Pacman extends Node implements Character {
     }
 
     public void setCharacterName() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public Class serializer() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public short id() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public Class<? extends Annotation> annotationType() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

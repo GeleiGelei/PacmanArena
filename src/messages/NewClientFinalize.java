@@ -1,6 +1,8 @@
 
 package messages;
 
+import client.Ghost;
+import client.Pacman;
 import com.jme3.network.AbstractMessage;
 import com.jme3.network.serializing.Serializable;
 
@@ -14,15 +16,24 @@ import com.jme3.network.serializing.Serializable;
 public class NewClientFinalize extends AbstractMessage {
     private int clientId;
     private String name; 
-    transient private client.Character gameCharacter;
+    private String playerChar;
+    private String playerCharName;
+    private int movementSpeed;
+    
     public NewClientFinalize() {
         //nothing here
     }
     
-    public NewClientFinalize(int id, String name, client.Character character) {
+    public NewClientFinalize(int id, String name, String playerChar, String playerCharName) {
         this.clientId = id;
         this.name = name;
-        this.gameCharacter = character;
+        this.playerChar = playerChar;
+        this.playerCharName = playerCharName;
+        if(playerChar.toLowerCase().equals("pacman")) {
+            this.movementSpeed = 10; //pacman speed
+        } else {
+            this.movementSpeed = 8;  //ghost speed
+        }
     }
     
     public int getId() {
@@ -33,7 +44,15 @@ public class NewClientFinalize extends AbstractMessage {
         return this.name;
     }
     
-    public client.Character getGameChar() {
-        return this.gameCharacter;
+    public String getGameChar() {
+        return this.playerChar;
+    }
+    
+    public String getGameCharName() {
+        return this.playerCharName;
+    }
+    
+    public int getMovementSpeed() {
+        return this.movementSpeed;
     }
 }

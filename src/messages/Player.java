@@ -2,6 +2,9 @@
 package messages;
 
 import client.Character;
+import client.Ghost;
+import client.Pacman;
+import com.jme3.math.Vector3f;
 import com.jme3.network.AbstractMessage;
 import com.jme3.network.serializing.Serializable;
 
@@ -24,13 +27,33 @@ public class Player extends AbstractMessage {
                                  * ghosts; ghosts recieve points for eating 
                                  * pacman. The values will differ. 
                                  */
-    private Character c;        /* Pacman or Ghost */
+    //can't figure out how to serialize and transfer interfaces here, so we can't 
+    //use polymorphism. Instead the player will have both, and we'll just do checks 
+    //to see which one they are based on if it's null or not... this sucks. 
+    private String playerCharacter; //determines whether we are pacman or ghost 
+    
+    /*character-specific data*/
+    private String characterName; //name of character; pacman, blinky, inky, etc.
+    private Vector3f location;    //current location
+    private Vector3f spawnLocation;//spawn location 
+    private int movementSpeed;    //used as a multiplier for movement
+    
+    /*Ghost-specific data*/
+    private boolean isVulnerable; // changes when ghost becomes 'blue'
+    
+    /*Pacman-specific data*/
+    private int lives;          //lives - decreases whenever ghost touches pacman
     
     public Player(int id) {
         this.id = id;
         this.name = "";
         this.points = 0;
-        this.c = null;
+        this.playerCharacter = null;
+        this.characterName = null;
+        this.location = new Vector3f(0, 0, 0);
+        this.spawnLocation = new Vector3f(0, 0, 0);
+        this.isVulnerable = false;
+        this.lives = 3;
     }
 
     public Player() {
@@ -62,13 +85,59 @@ public class Player extends AbstractMessage {
         return this.points;
     }
     
+    public void setPoints(int newPoints) {
+        this.points = newPoints;
+    }
+    
     // sets the players character 
-    public void setCharacter(Character c) {
-        this.c = c;
+    public void setCharacter(String c) {
+        this.playerCharacter = c;
     }
     
     // gets the player's character
-    public Character getCharacter() {
-        return this.c;
+    public String getCharacter() {
+        return this.playerCharacter;
+    }
+    
+    public void setCharacterName(String charName) {
+        this.characterName = charName;
+    }
+    
+    public String getCharacterName() {
+        return this.characterName;
+    }
+    
+    public Vector3f getPos() {
+        return this.location;
+    }
+    
+    public void setPos(Vector3f newPos) {
+        this.location = newPos;
+    }
+    
+    public Vector3f getSpawnLocation() {
+        return this.spawnLocation;
+    }
+    
+    public void setSpawnLocation(Vector3f loc) {
+        this.spawnLocation = loc;
+    }
+    
+    public void setMovementSpeed(int speed) {
+        this.movementSpeed = speed;
+    } 
+    
+    public void setLives(int newLives) {
+        this.lives = newLives;
+    }
+    
+    //returns true if player is dead; false otherwise
+    public boolean takeDamage() {
+        this.lives--;
+        return this.lives == 0;
+    }
+    
+    public void heal() {
+        this.lives++;
     }
 }
