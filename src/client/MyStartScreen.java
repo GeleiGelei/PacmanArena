@@ -103,6 +103,7 @@ public class MyStartScreen extends AbstractAppState implements ScreenController{
         this.screen = screen;
     }
     
+    //toggles the HUG ghost image display 
     public void toggleVulnerabilityGraphics(boolean isVulnerable) {
         if(isVulnerable) {
             //toggle HUD character image to be the blue ghost 

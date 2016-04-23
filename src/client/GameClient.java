@@ -80,6 +80,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         setPauseOnLostFocus(false);
         
         this.player = null;
+        this.pac = null;
         
         // Initialize the sky, lights, keys, and NiftyGui
         createSkybg();
@@ -255,6 +256,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
             if(this.player.getCharacter().toLowerCase().equals("ghost")) {
                 this.player.setVulnerability(vm.getVulnerability());
                 startScreen.toggleVulnerabilityGraphics(vm.getVulnerability());
+                this.ghost.toggleVulnerability(vm.getVulnerability());
             }
         }
     }
