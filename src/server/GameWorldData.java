@@ -74,6 +74,7 @@ public class GameWorldData {
                 p.setCharacter(pData.getGameChar());
                 p.setCharacterName(pData.getGameCharName());
                 p.setMovementSpeed(pData.getMovementSpeed());
+                p.setCharacterIndex(pData.getCharacterIndex());
                 break;
             }
         }
@@ -81,5 +82,14 @@ public class GameWorldData {
     
     public LinkedList getData() {
         return this.data;
+    }
+    
+    public void setVulnerable(boolean vulnerable) {
+        for(int i = 0; i < data.size(); i++) {
+            Player temp = data.get(i);
+            if(temp.getCharacter().toLowerCase().equals("ghost")) {
+                temp.setVulnerability(vulnerable);
+            }
+        }
     }
 }

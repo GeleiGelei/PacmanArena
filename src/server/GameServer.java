@@ -7,6 +7,7 @@ import com.jme3.network.Message;
 import messages.NewClientFinalize;
 import messages.NewClientMessage;
 import messages.Player;
+import messages.VulnerabilityMessage;
 public class GameServer implements ServerNetworkListener {
 
     ServerNetworkHandler networkHandler;
@@ -49,6 +50,10 @@ public class GameServer implements ServerNetworkListener {
             gameWorld.finalizePlayer((NewClientFinalize)msg);
             NewClientMessage resp = new NewClientMessage(((NewClientFinalize)msg).getId(), gameWorld.data);
             networkHandler.broadcast(resp);
+        } else if(msg instanceof VulnerabilityMessage) {
+            VulnerabilityMessage vul = (VulnerabilityMessage)msg;
+            gameWorld.setVulnerable(vul.getVulnerability());
+            networkHandler.broadcast(vul);
         }
     }
 

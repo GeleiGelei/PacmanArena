@@ -34,6 +34,7 @@ import java.awt.Toolkit;
 import messages.NewClientFinalize;
 import messages.NewClientMessage;
 import messages.PlayerDisconnectMessage;
+import messages.VulnerabilityMessage;
 
 public class GameClient extends SimpleApplication implements ClientNetworkListener, ActionListener {
     
@@ -63,6 +64,10 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         
     }
 
+    public Player getPlayer() {
+        return this.player;
+    }
+    
     // -------------------------------------------------------------------------
     public GameClient() {
         // this constructor has no fly cam!
@@ -132,8 +137,8 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         }
     }
     
-    public void initPlayer(String playerName, String playerCharacter, String playerCharacterName) {
-        NewClientFinalize ncf = new NewClientFinalize(this.player.getId(), playerName, playerCharacter, playerCharacterName);
+    public void initPlayer(String playerName, String playerCharacter, String playerCharacterName, int characterIndex) {
+        NewClientFinalize ncf = new NewClientFinalize(this.player.getId(), playerName, playerCharacter, playerCharacterName, characterIndex);
        
         //send over the new player info
         networkHandler.send(ncf);
@@ -244,6 +249,12 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
             if(this.nifty.getCurrentScreen().getScreenId().equals("start")) {
                 PlayerDisconnectMessage pdm = (PlayerDisconnectMessage)msg;
                 nifty.getScreen("start").findNiftyControl("playersConnected", Label.class).setText(pdm.getNumPlayers() + " players connected");
+            }
+        } else if(msg instanceof VulnerabilityMessage) {
+            VulnerabilityMessage vm = (VulnerabilityMessage)msg;
+            if(this.player.getCharacter().toLowerCase().equals("ghost")) {
+                this.player.setVulnerability(vm.getVulnerability());
+                startScreen.toggleVulnerabilityGraphics(vm.getVulnerability());
             }
         }
     }
