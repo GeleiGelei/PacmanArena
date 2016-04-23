@@ -7,14 +7,16 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Sphere;
+import messages.Player;
 
-public class Pacman extends Node{
-    
+public class Pacman extends Node implements Character {
+    private Player p; //the associated player with this character
     private static Sphere sphere;
     public Geometry pacGeo;
     
     // Constructor
-    Pacman(SimpleApplication sa){
+    Pacman(SimpleApplication sa, Player p){
+        this.p = p;
         createPacman(sa);
     }
     
@@ -35,5 +37,9 @@ public class Pacman extends Node{
     
     public Geometry getGeo(){
         return pacGeo;
+    }
+
+    public int getClientId() {
+        return this.p.getId();
     }
 }

@@ -18,17 +18,19 @@ public class NewClientFinalize extends AbstractMessage {
     private String playerCharName;
     private int movementSpeed;
     private int characterIndex;
+    private byte[][] mazeData;
     
     public NewClientFinalize() {
         //nothing here
     }
     
-    public NewClientFinalize(int id, String name, String playerChar, String playerCharName, int characterIndex) {
+    public NewClientFinalize(int id, String name, String playerChar, String playerCharName, int characterIndex, byte[][] mazeData) {
         this.clientId = id;
         this.name = name;
         this.playerChar = playerChar;
         this.playerCharName = playerCharName;
         this.characterIndex = characterIndex;
+        this.mazeData = mazeData;
         if(playerChar.toLowerCase().equals("pacman")) {
             this.movementSpeed = 10; //pacman speed
         } else {
@@ -58,5 +60,9 @@ public class NewClientFinalize extends AbstractMessage {
     
     public int getCharacterIndex() {
         return this.characterIndex;
+    }
+    
+    public byte[][] getMazeData() {
+        return this.mazeData;
     }
 }

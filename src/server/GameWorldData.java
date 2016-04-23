@@ -15,10 +15,13 @@ import messages.Player;
 
 public class GameWorldData {
     public LinkedList<Player> data;
+    public byte[][] mazeData;
+    public boolean mazeCreated;
 
     // -------------------------------------------------------------------------
     public GameWorldData() {
         data = new LinkedList<Player>();
+        mazeCreated = false;
     }
 
     // -------------------------------------------------------------------------
@@ -67,6 +70,12 @@ public class GameWorldData {
     
     // last step in getting a player set up for gameplay
     public void finalizePlayer(NewClientFinalize pData) {
+        //save the maze data of the first person to connect
+        if(!mazeCreated) {
+            this.mazeData = pData.getMazeData();
+            mazeCreated = true;
+        }
+        
         for(Player p : data) {
             if(p.getId() == pData.getId()) {
                 System.out.println("Setting player character to: " + pData.getGameChar());
