@@ -9,6 +9,7 @@ import messages.NewClientFinalize;
 import messages.NewClientMessage;
 import messages.Player;
 import messages.PositionMessage;
+import messages.RotationMessage;
 import messages.VulnerabilityMessage;
 public class GameServer implements ServerNetworkListener {
 
@@ -63,6 +64,8 @@ public class GameServer implements ServerNetworkListener {
             networkHandler.broadcast(vul);
         } else if(msg instanceof PositionMessage) {
             networkHandler.broadcast((PositionMessage)msg);
+        } else if(msg instanceof RotationMessage) {
+            networkHandler.broadcast((RotationMessage)msg);
         }
     }
 

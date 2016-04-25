@@ -21,5 +21,6 @@ public class Registration {
         Serializer.registerClass(PointUpdateMessage.class);
         Serializer.registerClass(PositionMessage.class);
         Serializer.registerClass(InitMazeMessage.class);
+        Serializer.registerClass(RotationMessage.class);
     }
 }

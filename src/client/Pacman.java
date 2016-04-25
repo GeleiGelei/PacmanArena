@@ -41,7 +41,6 @@ public class Pacman extends Node implements Character {
         System.out.println(control.getAnimationNames());
 
         this.attachChild(pacNode);
-        sa.getRootNode().attachChild(this);
     }
     
     public void movePacman(){
