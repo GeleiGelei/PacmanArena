@@ -31,6 +31,7 @@ public class Ghost extends Node implements Character {
         
         this.attachChild(ghostNode);
         sa.getRootNode().attachChild(this);
+        System.out.println("getting the ghost index " + p.getCharacterIndex());
         
         if(p.getCharacterIndex() == 1){
             System.out.println("hello");

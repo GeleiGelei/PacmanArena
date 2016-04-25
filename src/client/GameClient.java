@@ -5,6 +5,11 @@ import server.GameCubeMaze;
 import com.jme3.app.DebugKeysAppState;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.StatsAppState;
+import com.jme3.bounding.BoundingVolume;
+import com.jme3.bullet.BulletAppState;
+import com.jme3.bullet.collision.PhysicsCollisionListener;
+import com.jme3.bullet.control.RigidBodyControl;
+import com.jme3.collision.CollisionResults;
 import com.jme3.font.BitmapText;
 import com.jme3.input.ChaseCamera;
 import com.jme3.input.KeyInput;
@@ -39,6 +44,7 @@ import java.awt.Dimension;
 import java.awt.TextField;
 import java.awt.Toolkit;
 import java.util.LinkedList;
+import java.util.concurrent.Callable;
 import messages.InitMazeMessage;
 import messages.NewClientFinalize;
 import messages.NewClientMessage;
@@ -71,6 +77,12 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     Maze clientMaze;
     boolean mazeCreated;
     boolean initPlayerCalled = false;
+    int posUpdate = 0;
+    
+    Cheese[] chs = new Cheese[1200];
+    
+//    private RigidBodyControl wallPhysics;
+//    BulletAppState bullet;
     
     //list of players and corresponding characters (pacman or ghost) 
     public LinkedList<Player> gamePlayers;
@@ -111,7 +123,11 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         this.gamePlayerCharacters = new LinkedList<Character>();
         this.player = null;
         this.pac = null;
-        //this.ghost = null;
+        this.ghost = null;
+        
+//        bullet = new BulletAppState();
+//        stateManager.attach(bullet);
+//        bullet.getPhysicsSpace().addCollisionListener((PhysicsCollisionListener) this);
         
         // Initialize the sky, lights, keys, and NiftyGui
         createSkybg();
@@ -131,18 +147,24 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         connect();
         //buildMaze(10,5);
         
+        //wallPhysics = new RigidBodyControl(0.0f);
+        
     }
     
     private void buildMaze() {
         mazeCreated = true;
         mazeNode = new Node();
+        System.out.println("chs length " + chs.length);
         // create maze cells
+        int i = 0;
         for (int r = 0; r < clientMaze.getRows(); r++) {
             for (int c = 0; c < clientMaze.getCols(); c++) {
-                Cheese ch = new Cheese(this);
-                MazeCell mc = new MazeCell(clientMaze, r, c, this, ch);
+                chs[i] = new Cheese(this);
+                MazeCell mc = new MazeCell(clientMaze, r, c, this, chs[i]);
+                //mc.initPhysics();
                 mazeNode.attachChild(mc);
-                mazeNode.attachChild(ch);
+                mazeNode.attachChild(chs[i]);
+                i++;
             }
         }
         
@@ -245,8 +267,8 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
                         this.gamePlayerCharacters.add(newChar);
                         break;
                     case 1:
-                    case 2:
-                    case 3:
+                    case 2:                      
+                    case 3:                      
                     case 4:
                         newChar = new Ghost(this, temp);
                         rootNode.attachChild((Node)newChar);
@@ -322,18 +344,18 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         if(player.getCharacterIndex() == 0){
             Pacman temp = this.getPacman();
             temp.pacNode.attachChild(camNode);
-            camNode.setLocalTranslation(new Vector3f(0, 8, -15));
+            camNode.setLocalTranslation(new Vector3f(0, 12, -12));
             camNode.lookAt(temp.getLocalTranslation(), Vector3f.UNIT_Y);
         }
         else{
             Ghost temp = this.getGhost();
             temp.ghostNode.attachChild(camNode);
-            camNode.setLocalTranslation(new Vector3f(0, 8, -15));
+            camNode.setLocalTranslation(new Vector3f(0, 12, -12));
             camNode.lookAt(temp.getLocalTranslation(), Vector3f.UNIT_Y);
         }
 
         Quaternion XQuat = new Quaternion();
-        XQuat.fromAngleAxis(20 * FastMath.DEG_TO_RAD, Vector3f.UNIT_X);
+        XQuat.fromAngleAxis(35 * FastMath.DEG_TO_RAD, Vector3f.UNIT_X);
         camNode.setLocalRotation(XQuat);
         
     }
@@ -438,18 +460,24 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
                 pac.movePacman();
 
                 //build the position message and send to the server
-                PositionMessage pm = new PositionMessage((pac == null) ? ghost.getLocalTranslation() : 
-                        pac.getLocalTranslation(), player.getId());
-                networkHandler.send(pm);
+                if(posUpdate % 50 == 0) {
+                    PositionMessage pm = new PositionMessage((pac == null) ? ghost.getLocalTranslation() : 
+                            pac.getLocalTranslation(), player.getId());
+                    networkHandler.send(pm);
+                }
+                posUpdate++;
             }else{
                 Vector3f forward = ghost.getLocalRotation().mult(Vector3f.UNIT_Z);
                 ghost.move(forward.mult(tpf).mult(speed));
                 //ghost.moveGhost();
 
                 //build the position message and send to the server
-                PositionMessage pm = new PositionMessage((ghost == null) ? ghost.getLocalTranslation() : 
-                        pac.getLocalTranslation(), player.getId());
-                networkHandler.send(pm);
+                if(posUpdate % 50 == 0) {
+                    PositionMessage pm = new PositionMessage((ghost == null) ? pac.getLocalTranslation() : 
+                            ghost.getLocalTranslation(), player.getId());
+                    networkHandler.send(pm);
+                }
+                posUpdate++;
             }
         }
     };
@@ -518,17 +546,42 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
                 buildMaze();
             }
         } else if(msg instanceof PositionMessage) {
-            if(!mazeCreated) {
-                PositionMessage pm = (PositionMessage)msg;
+            //System.out.println("Position message recieved");
+            if(mazeCreated) {
+                final PositionMessage pm = (PositionMessage)msg;
                 if(pm.getId() != player.getId()) {
-                    for(Character c : gamePlayerCharacters) {
+                    for(final Character c : gamePlayerCharacters) {
                         if(c.getClientId() == pm.getId()) {
-                            ((Node)c).setLocalTranslation(pm.getPos());
+                            this.enqueue(new Callable<Spatial>() {
+                                public Spatial call() throws Exception {
+                                    return ((Node)c).move(pm.getPos());
+                                }
+                            });
+                            
                             break;
                         }
                     }
                 }
-                buildMaze();
+            }
+        }
+    }
+    
+    public void cheeseCollisionDetection(){
+        // Oto Collision Detection
+        CollisionResults results = new CollisionResults();
+        
+        for (Cheese jo:chs){
+            //System.out.println("ayy" + jo);
+            BoundingVolume bv = jo.cheeseNode.getWorldBound();
+            //System.out.println("bv = " +bv);
+            pac.pacNode.collideWith(bv, results);
+            System.out.println("results" + results.toString());
+            if (results.size()>0){
+                //System.out.println("resu = " + results);
+                System.out.println("Collision with obstacle "+count+"   >>  "+results.getCollision(0).toString());
+                //wasHit = true;
+                new SingleBurstParticleEmitter(this, this.pac.pacNode, Vector3f.ZERO);
+                results.clear();
             }
         }
     }
@@ -537,10 +590,18 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     @Override
     public void simpleUpdate(float tpf) {
         if(rotateLeft){
-            pac.rotate(0, tpf/4, 0);
+            if(player.getCharacterIndex() == 0)
+                pac.rotate(0, tpf/4, 0);
+            else
+                ghost.rotate(0, tpf/4, 0);
         }
         if(rotateRight){
-            pac.rotate(0, -tpf/4, 0);
+            if(player.getCharacterIndex() == 0)
+                pac.rotate(0, -tpf/4, 0);
+            else
+                ghost.rotate(0, -tpf/4, 0);
         }
+        
+        //cheeseCollisionDetection();
     }
 }
