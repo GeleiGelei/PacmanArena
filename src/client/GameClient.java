@@ -154,7 +154,6 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     }
     
     private void buildMaze() {
-        mazeCreated = true;
         mazeNode = new Node();
         System.out.println("chs length " + chs.length);
         // create maze cells
@@ -195,6 +194,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         mazeNode.attachChild(floor);
 
         rootNode.attachChild(mazeNode);
+        mazeCreated = true;
     }
 
     // -------------------------------------------------------------------------
@@ -636,6 +636,17 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
             networkHandler.send(rm);
         }
         
+        if(mazeCreated) {
+            for(int i = 0; i < chs.length; i++) {
+                Node temp = (Node)chs[i].getChild("cheeseNode");
+                Vector3f tempLoc = temp.getWorldTranslation();
+                float diff = tempLoc.distance((this.pac == null) ? 
+                        this.ghost.getWorldTranslation() : this.pac.getWorldTranslation());
+                if(diff < 1.5f) {
+                    mazeNode.detachChild(chs[i]);
+                }
+            }
+        }
         //cheeseCollisionDetection();
     }
 
