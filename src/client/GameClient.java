@@ -260,16 +260,18 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         
         System.out.println("player list: " + gamePlayers + ", currentPlayer: " + this.player.getId());
         if(playerCharacter.toLowerCase().equals("pacman")) {
-            this.player.setMovementSpeed(7);
+            this.player.setMovementSpeed(14);
+            
             this.pac = new Pacman(this, this.player);
+            rootNode.attachChild(this.pac);
             //initialize pacman, create him
             
             //add to character list 
             gamePlayerCharacters.add(this.pac);
         } else {
-            this.player.setMovementSpeed(5);
+            this.player.setMovementSpeed(10);
             this.ghost = new Ghost(this, this.player);
-            
+            rootNode.attachChild(this.ghost);
             //initialize pacman, create him
             
             //add to character list 
@@ -282,7 +284,6 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         networkHandler.send(ncf);
     }
 
-    
     // -------------------------------------------------------------------------
 
     public void SimpleUpdate(float tpf) {
