@@ -28,10 +28,33 @@ public class Ghost extends Node implements Character {
         //with this.p.getCharacterIndex() -> they correspond to the indices on the
         //start screen
         
-        ghostNode = new Node("GhostNode");
-        gNode = (Node) sa.getAssetManager().loadModel("Models/ghosts/orangeGhost.j3o");
-        gNode.setMaterial(sa.getAssetManager().loadMaterial("Materials/Generated/orangeGhostMat.j3m"));
-        ghostNode.attachChild(gNode);
+        
+        
+        
+        
+        if(p.getCharacterIndex() == 1){
+            ghostNode = new Node("GhostNode");
+            gNode = (Node) sa.getAssetManager().loadModel("Models/ghosts/orangeGhost.j3o");
+            gNode.setMaterial(sa.getAssetManager().loadMaterial("Materials/Generated/orangeGhostMat.j3m"));
+            ghostNode.attachChild(gNode);
+        }else if(p.getCharacterIndex() == 2){
+            ghostNode = new Node("GhostNode");
+            gNode = (Node) sa.getAssetManager().loadModel("Models/ghosts/blueGhost.j3o");
+            gNode.setMaterial(sa.getAssetManager().loadMaterial("Materials/Generated/blueGhostMat.j3m"));
+            ghostNode.attachChild(gNode);
+        }else if(p.getCharacterIndex() == 3){
+            ghostNode = new Node("GhostNode");
+            gNode = (Node) sa.getAssetManager().loadModel("Models/ghosts/redGhost.j3o");
+            gNode.setMaterial(sa.getAssetManager().loadMaterial("Materials/Generated/redGhostMat.j3m"));
+            ghostNode.attachChild(gNode);
+        }else if(p.getCharacterIndex() == 4){
+            ghostNode = new Node("GhostNode");
+            gNode = (Node) sa.getAssetManager().loadModel("Models/ghosts/pinkGhost.j3o");
+            gNode.setMaterial(sa.getAssetManager().loadMaterial("Materials/Generated/pinkGhostMat.j3m"));
+            ghostNode.attachChild(gNode);
+        }
+        
+        
         
         Node child = (Node) ghostNode.getChild(0);
         Node grandChild = (Node) child.getChild(0);
@@ -41,11 +64,6 @@ public class Ghost extends Node implements Character {
         
         this.attachChild(ghostNode);
         sa.getRootNode().attachChild(this);
-        //System.out.println("getting the ghost index " + p.getCharacterIndex());
-        
-        if(p.getCharacterIndex() == 1){
-            System.out.println("hello");
-        }
         
     }
     

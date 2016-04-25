@@ -19,15 +19,18 @@ public class Pacman extends Node implements Character {
     public Spatial pNode;
     private AnimChannel channel;
     private AnimControl control;
+    private boolean moving;
+    private boolean animSet;
     
     // Constructor
     Pacman(SimpleApplication sa, Player p){
+        this.moving = false;
+        this.animSet = false;
         this.p = p;
         createPacman(sa);
     }
     
     private void createPacman(SimpleApplication sa){
-        
         pacNode = new Node("PacmanNode");
         pNode = (Node) sa.getAssetManager().loadModel("Models/pacman/pacman.j3o");
         pNode.setMaterial(sa.getAssetManager().loadMaterial("Materials/Generated/pacmanMat.j3m"));
@@ -39,15 +42,33 @@ public class Pacman extends Node implements Character {
         control = grandChild.getChild(0).getControl(AnimControl.class);
         channel = control.createChannel();
         System.out.println(control.getAnimationNames());
-
+        
         this.attachChild(pacNode);
     }
     
-    public void movePacman(){
-        channel.setAnim("mouth_move");
+    public void toggleMoveAnimation(){
+        if(this.isMoving()) {
+            if(!animSet) {
+                channel.setAnim("mouth_move");
+                animSet = true;
+            }
+            channel.setSpeed(0.5f);
+        } else {
+            animSet = false;
+            channel.reset(false);
+            channel.setSpeed(0);
+        }
     }
     
     public int getClientId() {
         return this.p.getId();
+    }
+    
+    public void setMoving(boolean moving) {
+        this.moving = moving;
+    }
+    
+    public boolean isMoving() {
+        return this.moving;
     }
 }
