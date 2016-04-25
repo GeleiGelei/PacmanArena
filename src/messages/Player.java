@@ -125,6 +125,10 @@ public class Player extends AbstractMessage {
         this.movementSpeed = speed;
     } 
     
+    public int getMovementSpeed() {
+        return this.movementSpeed;
+    }
+    
     public void setLives(int newLives) {
         this.lives = newLives;
     }

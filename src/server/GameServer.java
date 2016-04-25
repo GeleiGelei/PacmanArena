@@ -8,6 +8,7 @@ import messages.InitMazeMessage;
 import messages.NewClientFinalize;
 import messages.NewClientMessage;
 import messages.Player;
+import messages.PositionMessage;
 import messages.VulnerabilityMessage;
 public class GameServer implements ServerNetworkListener {
 
@@ -61,6 +62,8 @@ public class GameServer implements ServerNetworkListener {
             VulnerabilityMessage vul = (VulnerabilityMessage)msg;
             gameWorld.setVulnerable(vul.getVulnerability());
             networkHandler.broadcast(vul);
+        } else if(msg instanceof PositionMessage) {
+            networkHandler.broadcast((PositionMessage)msg);
         }
     }
 

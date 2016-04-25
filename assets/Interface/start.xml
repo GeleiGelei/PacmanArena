@@ -36,7 +36,7 @@
     </screen>
     <screen id="hud" controller="client.MyStartScreen">
         <layer id="foreground" childLayout="center">
-            ￼<panel width="100%" height="100%" childLayout="horizontal">
+             <panel width="100%" height="100%" childLayout="horizontal">
                 <panel id="red" width="80%">
                     <!-- Leave This blank for the actual game content -->
                 </panel>

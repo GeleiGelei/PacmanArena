@@ -40,6 +40,7 @@ import messages.InitMazeMessage;
 import messages.NewClientFinalize;
 import messages.NewClientMessage;
 import messages.PlayerDisconnectMessage;
+import messages.PositionMessage;
 import messages.VulnerabilityMessage;
 
 public class GameClient extends SimpleApplication implements ClientNetworkListener, ActionListener {
@@ -211,22 +212,25 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
                 } 
             }
             
+            if(temp.getCharacter() == null) {
+                create = false;
+            }
+            
             if(create) {
+                System.out.println("Creating new game object for: " + temp.getName());
+                Character newChar;
                 switch(temp.getCharacterIndex()) {
                     case 0: //pacman
-                        this.gamePlayerCharacters.add(new Pacman(this, temp));
+                        newChar = new Pacman(this, temp);
+                        this.gamePlayerCharacters.add(newChar);
                         break;
-                    case 1: //clyde
-                        this.gamePlayerCharacters.add(new Ghost(this, temp));
-                        break;
-                    case 2: //inky
-                        this.gamePlayerCharacters.add(new Ghost(this, temp));
-                        break;
-                    case 3: //blinky
-                        this.gamePlayerCharacters.add(new Ghost(this, temp));
-                        break;
-                    case 4: //pinky
-                        this.gamePlayerCharacters.add(new Ghost(this, temp));
+                    case 1:
+                    case 2:
+                    case 3:
+                    case 4:
+                        newChar = new Ghost(this, temp);
+                        rootNode.attachChild((Node)newChar);
+                        this.gamePlayerCharacters.add(newChar);
                         break;
                     default: System.out.println("Error in initGame");
                 }
@@ -239,12 +243,14 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         
         System.out.println("player list: " + gamePlayers + ", currentPlayer: " + this.player.getId());
         if(playerCharacter.toLowerCase().equals("pacman")) {
+            this.player.setMovementSpeed(7);
             this.pac = new Pacman(this, this.player);
             //initialize pacman, create him
             
             //add to character list 
             gamePlayerCharacters.add(this.pac);
         } else {
+            this.player.setMovementSpeed(5);
             this.ghost = new Ghost(this, this.player);
             
             //initialize pacman, create him
@@ -361,28 +367,60 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     }
     
     private AnalogListener analogListener = new AnalogListener() {
-    public void onAnalog(String name, float value, float tpf) {
-        
-        speed = 5;
-        
-        if (name.equals("moveForward")) {
-            Vector3f v = pac.getLocalTranslation();
-            pac.setLocalTranslation(v.x, v.y, v.z + value*speed);
-        }
-        if (name.equals("moveBackward")) {
-            Vector3f v = pac.getLocalTranslation();
-            pac.setLocalTranslation(v.x, v.y, v.z - value*speed);
-        }
-        if (name.equals("moveLeft")) {
-            Vector3f v = pac.getLocalTranslation();
-            pac.setLocalTranslation(v.x + value*speed, v.y, v.z);
-        }
-        if (name.equals("moveRight")) {
-            Vector3f v = pac.getLocalTranslation();
-            pac.setLocalTranslation(v.x - value*speed, v.y, v.z);
-        }
-    }
-    };
+        public void onAnalog(String name, float value, float tpf) {
+
+            speed = player.getMovementSpeed();
+            boolean moved = false;
+
+            if (name.equals("moveForward")) {
+                moved = true;
+                if(player.getCharacter().toLowerCase().equals("pacman")) {
+                    Vector3f v = pac.getLocalTranslation();
+                    pac.setLocalTranslation(v.x, v.y, v.z + value*speed);
+                } else {
+                    Vector3f v = ghost.getLocalTranslation();
+                    ghost.setLocalTranslation(v.x, v.y, v.z + value*speed);
+                }
+            }
+            if (name.equals("moveBackward")) {
+                moved = true;
+                if(player.getCharacter().toLowerCase().equals("pacman")) {
+                    Vector3f v = pac.getLocalTranslation();
+                    pac.setLocalTranslation(v.x, v.y, v.z - value*speed);
+                } else {
+                    Vector3f v = ghost.getLocalTranslation();
+                    ghost.setLocalTranslation(v.x, v.y, v.z - value*speed);
+                }
+            }
+            if (name.equals("moveLeft")) {
+                moved = true;
+                if(player.getCharacter().toLowerCase().equals("pacman")) {
+                    Vector3f v = pac.getLocalTranslation();
+                    pac.setLocalTranslation(v.x + value*speed, v.y, v.z);
+                } else {
+                    Vector3f v = ghost.getLocalTranslation();
+                    ghost.setLocalTranslation(v.x + value*speed, v.y, v.z);
+                }
+            }
+            if (name.equals("moveRight")) {
+                moved = true;
+                if(player.getCharacter().toLowerCase().equals("pacman")) {
+                    Vector3f v = pac.getLocalTranslation();
+                    pac.setLocalTranslation(v.x - value*speed, v.y, v.z);
+                } else {
+                    Vector3f v = ghost.getLocalTranslation();
+                    ghost.setLocalTranslation(v.x - value*speed, v.y, v.z);
+                }
+            }
+            
+            if(moved) {
+                //build the position message and send to the server
+                PositionMessage pm = new PositionMessage((pac == null) ? ghost.getLocalTranslation() : 
+                        pac.getLocalTranslation(), player.getId());
+                networkHandler.send(pm);
+            }
+        }//onAnalog
+    };//AnalogListener
 
     // key action
     public void onAction(String name, boolean isPressed, float tpf) {
@@ -445,6 +483,19 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
             if(!mazeCreated) {
                 InitMazeMessage imm = (InitMazeMessage)msg;
                 this.clientMaze = new Maze(imm.getMazeData());
+                buildMaze();
+            }
+        } else if(msg instanceof PositionMessage) {
+            if(!mazeCreated) {
+                PositionMessage pm = (PositionMessage)msg;
+                if(pm.getId() != player.getId()) {
+                    for(Character c : gamePlayerCharacters) {
+                        if(c.getClientId() == pm.getId()) {
+                            ((Node)c).setLocalTranslation(pm.getPos());
+                            break;
+                        }
+                    }
+                }
                 buildMaze();
             }
         }

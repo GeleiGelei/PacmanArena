@@ -138,7 +138,6 @@ public class MyStartScreen extends AbstractAppState implements ScreenController{
             // Sets the text on the HUD screen to the input name
             Label l1 = screen.findNiftyControl("HUDtext", Label.class);
             l1.setText(inputName);
-            System.out.println("inputName: " + inputName);
             
             // Finds which character the user selected from the start screen
             ImageSelect userCharacter = nifty.getScreen("start").findNiftyControl("imS", ImageSelect.class);
