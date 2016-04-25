@@ -1,4 +1,3 @@
-
 package client;
 
 import com.jme3.app.SimpleApplication;

@@ -1,0 +1,14 @@
+Material My Material : Common/MatDefs/Light/Lighting.j3md {
+     MaterialParameters {
+        DiffuseMap : Flip Repeat Models/ghosts/deadghostTexture.png
+        Shininess : 20.0
+        GlowColor : 1.0 1.0 1.0 1.0
+        Specular : 1.0 1.0 1.0 1.0
+        Diffuse : 1.0 1.0 1.0 1.0
+        Ambient : 1.0 1.0 1.0 1.0
+        ParallaxHeight : 0.05
+        UseMaterialColors : true
+     }
+    AdditionalRenderState {
+    }
+}

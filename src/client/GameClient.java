@@ -16,14 +16,17 @@ import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.network.Message;
 import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.post.filters.BloomFilter;
+import com.jme3.scene.CameraNode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.control.CameraControl;
 import com.jme3.scene.shape.Box;
 import com.jme3.shadow.DirectionalLightShadowRenderer;
 import com.jme3.system.AppSettings;
@@ -63,6 +66,8 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     Pacman pac;
     Ghost ghost;
     ChaseCamera camera;
+    boolean rotateLeft = false;
+    boolean rotateRight = false;
     Maze clientMaze;
     boolean mazeCreated;
     
@@ -112,7 +117,8 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         initLightandShadow();
         initMaterial();
         initKeys();
-        initCam();
+        
+        
         initGui();
         initNifty();
         
@@ -122,6 +128,8 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         
         //creates a new ClientNetworkHandler and connects to the server
         connect();
+        //buildMaze(10,5);
+        
     }
     
     private void buildMaze() {
@@ -130,13 +138,16 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         // create maze cells
         for (int r = 0; r < clientMaze.getRows(); r++) {
             for (int c = 0; c < clientMaze.getCols(); c++) {
-                MazeCell mc = new MazeCell(clientMaze, r, c, this);
+                Cheese ch = new Cheese(this);
+                MazeCell mc = new MazeCell(clientMaze, r, c, this, ch);
                 mazeNode.attachChild(mc);
+                mazeNode.attachChild(ch);
             }
         }
         
         int cols = clientMaze.getCols();
         int rows = clientMaze.getRows();
+
 //        // add South Boundary
         Box south = new Box(cols * MazeCell.CELLSIZE / 2, MazeCell.WALLHEIGHT, MazeCell.WALLTHICKNESS);
         Geometry southWall = new Geometry("sw", south);
@@ -164,6 +175,10 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
 //        float transZ = rows * MazeCell.CELLSIZE / 2f;
 //        mazeNode.setLocalTranslation(-transX, 0f, -transZ);
         rootNode.attachChild(mazeNode);
+    }
+    
+    public Pacman getPacman(){
+        return this.pac;
     }
 
     // -------------------------------------------------------------------------
@@ -258,7 +273,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
             //add to character list 
             gamePlayerCharacters.add(this.ghost);
         }
-        
+        initCam();
         System.out.println("character list: " + gamePlayerCharacters);
         
         //send over the new player info
@@ -277,8 +292,8 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     private static AppSettings getAppSettings() {
         AppSettings aps = new AppSettings(true);
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-        screen.width *= 0.75;
-        screen.height *= 0.75;
+        screen.width *= 0.85;
+        screen.height *= 0.85;
         aps.setResolution(screen.width, screen.height);
         aps.setTitle("3D Multiplayer PacMan");
         return (aps);
@@ -291,11 +306,20 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     }
     
     private void initCam(){
-        this.getFlyByCamera().setMoveSpeed(30);
-        //flyCam.setEnabled(false);
-        //camera = new ChaseCamera(cam,pac.getGeo(),this.getInputManager());
-        //camera.setDragToRotate(false);
-        //camera.setEnabled(true);
+        this.getFlyByCamera().setEnabled(false);
+        
+        CameraNode camNode = new CameraNode("Camera Node", cam);
+        camNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
+        Pacman temp = this.getPacman();
+        temp.pacNode.attachChild(camNode);
+        
+        camNode.setLocalTranslation(new Vector3f(0, 8, -15));
+        camNode.lookAt(temp.getLocalTranslation(), Vector3f.UNIT_Y);
+        
+        Quaternion XQuat = new Quaternion();
+        XQuat.fromAngleAxis(20 * FastMath.DEG_TO_RAD, Vector3f.UNIT_X);
+        
+        camNode.setLocalRotation(XQuat);
     }
     
     private void initNifty(){
@@ -348,7 +372,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
 
         mat1 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
         mat1.setBoolean("UseMaterialColors", true);
-        mat1.setColor("Ambient", ColorRGBA.Black);
+        mat1.setColor("Ambient", ColorRGBA.Gray);
         mat1.setColor("Diffuse", ColorRGBA.Black);
         mat1.setColor("Specular", ColorRGBA.Gray);
         mat1.setFloat("Shininess", 2f); // shininess from 1-128
@@ -363,64 +387,49 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         inputManager.addMapping("moveLeft", new KeyTrigger(KeyInput.KEY_J));
         inputManager.addMapping("moveRight", new KeyTrigger(KeyInput.KEY_L));
     
-        inputManager.addListener(analogListener,"moveForward", "moveBackward", "moveLeft", "moveRight");
+        inputManager.addListener(analogListener,"moveForward", "moveBackward");
+        inputManager.addListener(actionListener, "moveLeft", "moveRight");
     }
+    
+    private ActionListener actionListener = new ActionListener() {
+    public void onAction(String name, boolean keyPressed, float tpf) {
+        
+        if(name.equals("moveLeft")){
+            if (keyPressed) {
+                rotateLeft = true;
+            } else {
+                rotateLeft = false;
+            }
+        }
+        
+        if(name.equals("moveRight")){
+            if (keyPressed) {
+                rotateRight = true;
+            } else {
+                rotateRight = false;
+            }
+        }
+    }
+    };
     
     private AnalogListener analogListener = new AnalogListener() {
         public void onAnalog(String name, float value, float tpf) {
-
             speed = player.getMovementSpeed();
-            boolean moved = false;
 
             if (name.equals("moveForward")) {
-                moved = true;
-                if(player.getCharacter().toLowerCase().equals("pacman")) {
-                    Vector3f v = pac.getLocalTranslation();
-                    pac.setLocalTranslation(v.x, v.y, v.z + value*speed);
-                } else {
-                    Vector3f v = ghost.getLocalTranslation();
-                    ghost.setLocalTranslation(v.x, v.y, v.z + value*speed);
-                }
-            }
-            if (name.equals("moveBackward")) {
-                moved = true;
-                if(player.getCharacter().toLowerCase().equals("pacman")) {
-                    Vector3f v = pac.getLocalTranslation();
-                    pac.setLocalTranslation(v.x, v.y, v.z - value*speed);
-                } else {
-                    Vector3f v = ghost.getLocalTranslation();
-                    ghost.setLocalTranslation(v.x, v.y, v.z - value*speed);
-                }
-            }
-            if (name.equals("moveLeft")) {
-                moved = true;
-                if(player.getCharacter().toLowerCase().equals("pacman")) {
-                    Vector3f v = pac.getLocalTranslation();
-                    pac.setLocalTranslation(v.x + value*speed, v.y, v.z);
-                } else {
-                    Vector3f v = ghost.getLocalTranslation();
-                    ghost.setLocalTranslation(v.x + value*speed, v.y, v.z);
-                }
-            }
-            if (name.equals("moveRight")) {
-                moved = true;
-                if(player.getCharacter().toLowerCase().equals("pacman")) {
-                    Vector3f v = pac.getLocalTranslation();
-                    pac.setLocalTranslation(v.x - value*speed, v.y, v.z);
-                } else {
-                    Vector3f v = ghost.getLocalTranslation();
-                    ghost.setLocalTranslation(v.x - value*speed, v.y, v.z);
-                }
-            }
-            
-            if(moved) {
+                Vector3f forward = pac.getLocalRotation().mult(Vector3f.UNIT_Z);
+                //pac.setLocalTranslation(forward);
+                pac.move(forward.mult(tpf).mult(speed));
+                //pac.setLocalTranslation(v.x, v.y, v.z + value*speed);
+                pac.movePacman();
+
                 //build the position message and send to the server
                 PositionMessage pm = new PositionMessage((pac == null) ? ghost.getLocalTranslation() : 
                         pac.getLocalTranslation(), player.getId());
                 networkHandler.send(pm);
             }
-        }//onAnalog
-    };//AnalogListener
+        }
+    };
 
     // key action
     public void onAction(String name, boolean isPressed, float tpf) {
@@ -504,6 +513,11 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     
     @Override
     public void simpleUpdate(float tpf) {
-        //System.out.println(pac.getLocalTranslation());
+        if(rotateLeft){
+            pac.rotate(0, tpf/4, 0);
+        }
+        if(rotateRight){
+            pac.rotate(0, -tpf/4, 0);
+        }
     }
 }
