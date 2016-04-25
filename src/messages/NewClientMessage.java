@@ -2,6 +2,7 @@ package messages;
 
 import com.jme3.network.AbstractMessage;
 import com.jme3.network.serializing.Serializable;
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 @Serializable
@@ -9,14 +10,14 @@ public class NewClientMessage extends AbstractMessage {
 
     public int ID;
     public String err;
-    public LinkedList<Player> gameWorldData;
+    public ArrayList gameWorldData;
 
     // -------------------------------------------------------------------------
     public NewClientMessage() {
     }
 
     // -------------------------------------------------------------------------
-    public NewClientMessage(int ID, LinkedList<Player> gameWorldData) {
+    public NewClientMessage(int ID, ArrayList gameWorldData) {
         super();
         this.ID = ID;
         this.gameWorldData = gameWorldData;

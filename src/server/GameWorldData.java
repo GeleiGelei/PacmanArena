@@ -2,6 +2,7 @@
 package server;
 
 import com.jme3.math.ColorRGBA;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Random;
 import messages.NewClientFinalize;
@@ -14,13 +15,13 @@ import messages.Player;
  */
 
 public class GameWorldData {
-    public LinkedList<Player> data;
+    public ArrayList data;
     public byte[][] mazeData;
     public boolean mazeCreated;
 
     // -------------------------------------------------------------------------
     public GameWorldData() {
-        data = new LinkedList<Player>();
+        data = new ArrayList();
         mazeCreated = false;
     }
 
@@ -37,7 +38,7 @@ public class GameWorldData {
         
         //if we have space, make a newly initialized player and add them to the list
         temp = new Player(id);
-        data.addLast(temp);
+        data.add(id, temp);
         
         return temp;
     }
@@ -45,22 +46,7 @@ public class GameWorldData {
     // removes the player with the given id from the game. This happens on connect 
     public boolean removePlayer(int id) {
         try {
-            boolean found = false;
-            int idx = 0;
-            for(Player p : data) {
-                System.out.println("id: " + p.getId());
-                if(p.getId() == id) {
-                    found = true;
-                    break;
-                }
-                idx++;
-            };
-            if(found) { 
-                data.remove(idx);
-            } else {
-                System.out.println("Couldn't find player with the given id: " + id);
-                return false;
-            }
+            data.remove(id);
         } catch(Exception e) {
             System.out.println("Exception in removePlayer(): " + e.getMessage());
             return false;
@@ -76,26 +62,21 @@ public class GameWorldData {
             mazeCreated = true;
         }
         
-        for(Player p : data) {
-            if(p.getId() == pData.getId()) {
-                System.out.println("Setting player character to: " + pData.getGameChar());
-                p.setName(pData.getName());
-                p.setCharacter(pData.getGameChar());
-                p.setCharacterName(pData.getGameCharName());
-                p.setMovementSpeed(pData.getMovementSpeed());
-                p.setCharacterIndex(pData.getCharacterIndex());
-                break;
-            }
-        }
+        Player p = (Player)data.get(pData.getId());
+        p.setName(pData.getName());
+        p.setCharacter(pData.getGameChar());
+        p.setCharacterName(pData.getGameCharName());
+        p.setMovementSpeed(pData.getMovementSpeed());
+        p.setCharacterIndex(pData.getCharacterIndex());
     }
     
-    public LinkedList getData() {
+    public ArrayList getData() {
         return this.data;
     }
     
     public void setVulnerable(boolean vulnerable) {
         for(int i = 0; i < data.size(); i++) {
-            Player temp = data.get(i);
+            Player temp = (Player)data.get(i);
             if(temp.getCharacter().toLowerCase().equals("ghost")) {
                 temp.setVulnerability(vulnerable);
             }

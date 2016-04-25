@@ -76,7 +76,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     int posUpdate = 0;
     
     //list of players and corresponding characters (pacman or ghost) 
-    public LinkedList<Player> gamePlayers;
+    public ArrayList gamePlayers;
     public ArrayList gamePlayerCharacters;
 
     private MyStartScreen startScreen;
@@ -110,7 +110,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     public void simpleInitApp() {
         setPauseOnLostFocus(false);
         
-        this.gamePlayers = new LinkedList<Player>();
+        this.gamePlayers = new ArrayList();
         this.gamePlayerCharacters = new ArrayList();
         this.player = null;
         this.pac = null;
@@ -195,22 +195,19 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         //update the player data
         gamePlayers = msg.gameWorldData;
         System.out.println("Updated player list: " + gamePlayers.toString());
-        for(Player p : msg.gameWorldData) {
-            
-            if(p.getId() == msg.ID) {
-                if(this.player != null) {
-                    if(this.player.getId() == msg.ID) {
-                        this.player = p;
-                        System.out.println("Updated player: " + this.player.getId());
-                        break;
-                    }
-                } else {
+        
+        Player p = (Player)msg.gameWorldData.get(msg.ID);
+        if(p.getId() == msg.ID) {
+            if(this.player != null) {
+                if(this.player.getId() == msg.ID) {
                     this.player = p;
-                    System.out.println("New player: " + this.player.getId());
-                    break;
+                    System.out.println("Updated player: " + this.player.getId());
                 }
-                
+            } else {
+                this.player = p;
+                System.out.println("New player: " + this.player.getId());
             }
+
         }
         
         if(this.player.getCharacter() != null) {
@@ -223,7 +220,9 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         }
         
         //add new player models to the game if it hasn't been done already 
-        for(Player temp : gamePlayers) {
+        for(int k = 0; k < gamePlayers.size(); k++) {
+            Player temp = (Player)gamePlayers.get(k);
+            
             boolean create = true;
             for(int j = 0; j < gamePlayerCharacters.size(); j++) {
                 if(((Character)gamePlayerCharacters.get(j)).getClientId() == temp.getId()) {
@@ -237,20 +236,30 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
             
             if(create) {
                 System.out.println("Creating new game object for: " + temp.getName());
-                Character newChar;
+                final Character newChar;
                 switch(temp.getCharacterIndex()) {
                     case 0: //pacman
                         newChar = new Pacman(this, temp);
-                        rootNode.attachChild((Node)newChar);
                         this.gamePlayerCharacters.add(newChar);
+                        this.enqueue(new Callable<Spatial>() {
+                            public Spatial call() throws Exception {
+                                rootNode.attachChild((Node)newChar);
+                                return (Node)newChar;
+                            }
+                        });
                         break;
                     case 1:
                     case 2:
                     case 3:
                     case 4:
                         newChar = new Ghost(this, temp);
-                        rootNode.attachChild((Node)newChar);
                         this.gamePlayerCharacters.add(newChar);
+                        this.enqueue(new Callable<Spatial>() {
+                            public Spatial call() throws Exception {
+                                rootNode.attachChild((Node)newChar);
+                                return (Node)newChar;
+                            }
+                        });
                         break;
                     default: System.out.println("Error in initGame");
                 }
@@ -430,12 +439,10 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
                 pac.movePacman();
 
                 //build the position message and send to the server
-                //if(posUpdate % 10 == 0) {
-                    PositionMessage pm = new PositionMessage((pac == null) ? ghost.getLocalTranslation() : 
-                            pac.getLocalTranslation(), player.getId());
-                    networkHandler.send(pm);
-                //}
-                //posUpdate++;
+                PositionMessage pm = new PositionMessage((pac == null) ? ghost.getLocalTranslation() : 
+                        pac.getLocalTranslation(), player.getId());
+                networkHandler.send(pm);
+                
             }
         }
     };
@@ -477,7 +484,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
                 //find the disconnected player in the list of players
                 int pIdx = -1;
                 for(int i = 0; i < gamePlayers.size(); i++) {
-                    if(gamePlayers.get(i).getId() == pdm.getId()) {
+                    if(((Player)gamePlayers.get(i)).getId() == pdm.getId()) {
                         pIdx = i;
                         break;
                     }
@@ -499,9 +506,14 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
             }
         } else if(msg instanceof InitMazeMessage) {
             if(!mazeCreated) {
-                InitMazeMessage imm = (InitMazeMessage)msg;
-                this.clientMaze = new Maze(imm.getMazeData());
-                buildMaze();
+                final InitMazeMessage imm = (InitMazeMessage)msg;
+                this.enqueue(new Callable<Spatial>() {
+                    public Spatial call() throws Exception {
+                        clientMaze = new Maze(imm.getMazeData());
+                        buildMaze();
+                        return null;
+                    }
+                });
             }
         } else if(msg instanceof PositionMessage) {
             //System.out.println("Position message recieved");
@@ -511,10 +523,12 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
                     this.enqueue(new Callable<Spatial>() {
                         public Spatial call() throws Exception {
                             ((Node)gamePlayerCharacters.get(pm.getId())).setLocalTranslation(pm.getPos());
+                            if(((Player)gamePlayers.get(pm.getId())).getCharacter().toLowerCase().equals("pacman")) {
+                                ((Pacman)gamePlayerCharacters.get(pm.getId())).movePacman();
+                            }
                             return ((Node)gamePlayerCharacters.get(pm.getId()));
                         }
                     });
-
                 }
             }
         } else if(msg instanceof RotationMessage) {
