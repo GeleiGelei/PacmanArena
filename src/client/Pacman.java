@@ -4,8 +4,14 @@ package client;
 import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
 import com.jme3.app.SimpleApplication;
+import com.jme3.bullet.collision.shapes.SphereCollisionShape;
+import com.jme3.bullet.control.BetterCharacterControl;
+import com.jme3.bullet.control.CharacterControl;
+import com.jme3.bullet.control.RigidBodyControl;
+import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
@@ -21,9 +27,11 @@ public class Pacman extends Node implements Character {
     private AnimControl control;
     private boolean moving;
     private boolean animSet;
+    SimpleApplication sa;
     
     // Constructor
     Pacman(SimpleApplication sa, Player p){
+        this.sa = sa;
         this.moving = false;
         this.animSet = false;
         this.p = p;
@@ -33,7 +41,9 @@ public class Pacman extends Node implements Character {
     private void createPacman(SimpleApplication sa){
         pacNode = new Node("PacmanNode");
         pNode = (Node) sa.getAssetManager().loadModel("Models/pacman/pacman.j3o");
-        pNode.setMaterial(sa.getAssetManager().loadMaterial("Materials/Generated/pacmanMat.j3m"));
+        Material pacMat = sa.getAssetManager().loadMaterial("Materials/Generated/pacmanMat.j3m");
+        pNode.setMaterial(pacMat);
+        //pacMat.getAdditionalRenderState().setWireframe(true);
         
         pacNode.attachChild(pNode);
         

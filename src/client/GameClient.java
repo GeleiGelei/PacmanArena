@@ -46,11 +46,13 @@ import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.concurrent.Callable;
+import messages.CheeseConsumptionMessage;
 import messages.InitMazeMessage;
 import messages.NewClientFinalize;
 import messages.NewClientMessage;
 import messages.PlayerDisconnectMessage;
 import messages.PositionMessage;
+import messages.RespawnMessage;
 import messages.RotationMessage;
 import messages.VulnerabilityMessage;
 
@@ -82,9 +84,10 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     int posUpdate = 0;
     
     Cheese[] chs = new Cheese[1200];
+    ArrayList mazeCells;
     
 //    private RigidBodyControl wallPhysics;
-//    BulletAppState bullet;
+    BulletAppState bullet;
     
     //list of players and corresponding characters (pacman or ghost) 
     public ArrayList gamePlayers;
@@ -121,15 +124,15 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     public void simpleInitApp() {
         setPauseOnLostFocus(false);
         
+        this.mazeCells = new ArrayList();
         this.gamePlayers = new ArrayList();
         this.gamePlayerCharacters = new ArrayList();
         this.player = null;
         this.pac = null;
         this.ghost = null;
         
-//        bullet = new BulletAppState();
-//        stateManager.attach(bullet);
-//        bullet.getPhysicsSpace().addCollisionListener((PhysicsCollisionListener) this);
+        bullet = new BulletAppState();
+        stateManager.attach(bullet);
         
         // Initialize the sky, lights, keys, and NiftyGui
         createSkybg();
@@ -161,8 +164,8 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         for (int r = 0; r < clientMaze.getRows(); r++) {
             for (int c = 0; c < clientMaze.getCols(); c++) {
                 chs[i] = new Cheese(this);
-                MazeCell mc = new MazeCell(clientMaze, r, c, this, chs[i]);
-                //mc.initPhysics();
+                MazeCell mc = new MazeCell(clientMaze, r, c, this, chs[i], this);
+                this.mazeCells.add(mc);
                 mazeNode.attachChild(mc);
                 mazeNode.attachChild(chs[i]);
                 i++;
@@ -418,6 +421,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         mat.setColor("Diffuse", ColorRGBA.Blue);
         mat.setColor("Specular", ColorRGBA.White);
         mat.setFloat("Shininess", 12f); // shininess from 1-128
+        //mat.getAdditionalRenderState().setWireframe(true);
 
         mat1 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
         mat1.setBoolean("UseMaterialColors", true);
@@ -460,7 +464,6 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         
         if(name.equals("moveForward")) {
             if(player.getCharacter().toLowerCase().equals("pacman") && !keyPressed) {
-                System.out.println("Here");
                 pac.setMoving(false);
                 pac.toggleMoveAnimation();
             }
@@ -589,29 +592,33 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
 
                 }
             }
-        }
-    }
-    
-    public void cheeseCollisionDetection(){
-        // Oto Collision Detection
-        CollisionResults results = new CollisionResults();
-        
-        for (Cheese jo:chs){
-            //System.out.println("ayy" + jo);
-            BoundingVolume bv = jo.cheeseNode.getWorldBound();
-            //System.out.println("bv = " +bv);
-            pac.pacNode.collideWith(bv, results);
-            System.out.println("results" + results.toString());
-            if (results.size()>0){
-                //System.out.println("resu = " + results);
-                System.out.println("Collision with obstacle "+count+"   >>  "+results.getCollision(0).toString());
-                //wasHit = true;
-                new SingleBurstParticleEmitter(this, this.pac.pacNode, Vector3f.ZERO);
-                results.clear();
+        } else if(msg instanceof RespawnMessage) {
+            final RespawnMessage rm = (RespawnMessage)msg;
+            if(mazeCreated && rm.getClientId() != this.player.getId()) {
+                for(int i = 0; i < gamePlayerCharacters.size(); i++) {
+                    if(((Character)gamePlayerCharacters.get(i)).getClientId() == rm.getClientId()) {
+                        final Node temp = (Node)gamePlayerCharacters.get(i);
+                        this.enqueue(new Callable<Spatial>() {
+                            public Spatial call() throws Exception {
+                                temp.setLocalTranslation(rm.getRespawnLoc());
+                                return null;
+                            }
+                        });
+                        
+                        break;
+                    }
+                }
             }
+        } else if(msg instanceof CheeseConsumptionMessage) {
+            final CheeseConsumptionMessage ccm = (CheeseConsumptionMessage)msg;
+            this.enqueue(new Callable<Spatial>() {
+                public Spatial call() throws Exception {
+                    mazeNode.detachChild(chs[ccm.getCheeseIndex()]);
+                    return null;
+                }
+            });
         }
-    }
-    
+    }  
     
     @Override
     public void simpleUpdate(float tpf) {
@@ -636,17 +643,67 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
             networkHandler.send(rm);
         }
         
-        if(mazeCreated) {
+        if(mazeCreated && this.player.getCharacter().toLowerCase().equals("pacman")) {
             for(int i = 0; i < chs.length; i++) {
                 Node temp = (Node)chs[i].getChild("cheeseNode");
                 Vector3f tempLoc = temp.getWorldTranslation();
-                float diff = tempLoc.distance((this.pac == null) ? 
-                        this.ghost.getWorldTranslation() : this.pac.getWorldTranslation());
+                float diff = tempLoc.distance(this.pac.getWorldTranslation());
                 if(diff < 1.5f) {
+                    CheeseConsumptionMessage ccm = new CheeseConsumptionMessage(i);
+                    networkHandler.send(ccm);
                     mazeNode.detachChild(chs[i]);
                 }
             }
         }
+        
+        if(mazeCreated) {
+            for(int d = 0; d < gamePlayerCharacters.size(); d++) {
+                if(this.pac != null) {
+                    if(((Player)gamePlayers.get(d)).getCharacter().toLowerCase().equals("ghost")) {
+                        Node temp = (Node)gamePlayerCharacters.get(d);
+                        Vector3f tempLoc = temp.getLocalTranslation();
+                        float diff = tempLoc.distance(this.pac.getLocalTranslation());
+                        if(diff < 1.5f) {
+                            if(((Player)gamePlayers.get(d)).hasVulnerability()) {
+                                //increment pacman's points and send the ghost back to spawn
+                            } else {
+                                this.player.takeDamage();
+                                //send pacman to spawn
+                                this.pac.setLocalTranslation(0, 0, 0);
+                                RespawnMessage rm = new RespawnMessage(new Vector3f(0, 0, 0), this.player.getId());
+                                networkHandler.send(rm);
+                                if(this.player.getLives() == 0) {
+                                    //end screen + death message
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    if(((Player)gamePlayers.get(d)).getCharacter().toLowerCase().equals("pacman")) {
+                        Node temp = (Node)gamePlayerCharacters.get(d);
+                        Vector3f tempLoc = temp.getLocalTranslation();
+                        float diff = tempLoc.distance(this.ghost.getLocalTranslation());
+                        if(diff < 1.5f) {
+                            if(this.player.hasVulnerability()) {
+                                //get sent to spawn
+                            }
+                        }
+                    }
+                }
+            }
+        }
+//        if(mazeCreated) {
+//            for(int l = 0; l < this.mazeCells.size(); l++) {
+//                Node tempCell = (Node)mazeCells.get(l);
+//                Vector3f tempCellLoc = tempCell.getWorldTranslation();
+//                float cellDiff = tempCellLoc.distance((this.pac == null) ? 
+//                        this.ghost.getLocalTranslation() : this.pac.getLocalTranslation());
+//                if(cellDiff < 0.0005f) {
+//                    System.out.println("Collided with: " + l + ", " + tempCellLoc);
+//                }
+//                //System.out.println("cell: " + tempCellLoc + ", pacman: " + this.pac.getLocalTranslation());
+//            }
+//        }
         //cheeseCollisionDetection();
     }
 

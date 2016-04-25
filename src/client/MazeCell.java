@@ -4,7 +4,12 @@
  */
 package client;
 
+import com.jme3.app.SimpleApplication;
+import com.jme3.bounding.BoundingBox;
+import com.jme3.bullet.collision.shapes.BoxCollisionShape;
+import com.jme3.bullet.control.GhostControl;
 import com.jme3.bullet.control.RigidBodyControl;
+import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
@@ -17,12 +22,12 @@ class MazeCell extends Node {
     static final float WALLHEIGHT = CELLSIZE / 3;
     public static Box sideWallH = new Box(CELLSIZE / 2, WALLHEIGHT, WALLTHICKNESS);
     public static Box sideWallV = new Box(WALLTHICKNESS, WALLHEIGHT, CELLSIZE / 2);
-    private RigidBodyControl mazePhysics;
     Geometry nw;
     Geometry sw;
+    SimpleApplication sa;
     
-    protected MazeCell(Maze m, int row, int col, GameClient main, Cheese ch) {
-
+    protected MazeCell(Maze m, int row, int col, GameClient main, Cheese ch, SimpleApplication sa) {
+        this.sa = sa;
         // northWall
         if (m.hasNorthWall(row, col)) {
             nw = new Geometry("W", sideWallH);
@@ -42,12 +47,5 @@ class MazeCell extends Node {
         // set translation of entire cell
         setLocalTranslation(CELLSIZE * col, 0, CELLSIZE * row);
         ch.setLocalTranslation(CELLSIZE * col, 0, CELLSIZE * row);
-    }
-    
-    protected void initPhysics(){
-        mazePhysics = new RigidBodyControl(0);
-        nw.addControl(mazePhysics);
-        sw.addControl(mazePhysics);
-    }
-    
+    }    
 }

@@ -143,8 +143,16 @@ public class Player extends AbstractMessage {
         this.lives++;
     }
     
+    public int getLives() {
+        return this.lives;
+    }
+    
     public void setVulnerability(boolean vulnerable) {
         this.isVulnerable = vulnerable;
+    }
+    
+    public boolean hasVulnerability() {
+        return this.isVulnerable;
     }
     
     public void setCharacterIndex(int idx) {

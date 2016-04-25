@@ -22,5 +22,7 @@ public class Registration {
         Serializer.registerClass(PositionMessage.class);
         Serializer.registerClass(InitMazeMessage.class);
         Serializer.registerClass(RotationMessage.class);
+        Serializer.registerClass(RespawnMessage.class);
+        Serializer.registerClass(CheeseConsumptionMessage.class);
     }
 }

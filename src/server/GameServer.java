@@ -4,11 +4,13 @@
 package server;
 
 import com.jme3.network.Message;
+import messages.CheeseConsumptionMessage;
 import messages.InitMazeMessage;
 import messages.NewClientFinalize;
 import messages.NewClientMessage;
 import messages.Player;
 import messages.PositionMessage;
+import messages.RespawnMessage;
 import messages.RotationMessage;
 import messages.VulnerabilityMessage;
 public class GameServer implements ServerNetworkListener {
@@ -66,6 +68,10 @@ public class GameServer implements ServerNetworkListener {
             networkHandler.broadcast((PositionMessage)msg);
         } else if(msg instanceof RotationMessage) {
             networkHandler.broadcast((RotationMessage)msg);
+        } else if(msg instanceof RespawnMessage) {
+            networkHandler.broadcast((RespawnMessage)msg);
+        } else if(msg instanceof CheeseConsumptionMessage) {
+            networkHandler.broadcast((CheeseConsumptionMessage)msg);
         }
     }
 
