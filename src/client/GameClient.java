@@ -38,6 +38,7 @@ import de.lessvoid.nifty.screen.ScreenController;
 import java.awt.Dimension;
 import java.awt.TextField;
 import java.awt.Toolkit;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.concurrent.Callable;
 import messages.InitMazeMessage;
@@ -45,6 +46,7 @@ import messages.NewClientFinalize;
 import messages.NewClientMessage;
 import messages.PlayerDisconnectMessage;
 import messages.PositionMessage;
+import messages.RotationMessage;
 import messages.VulnerabilityMessage;
 
 public class GameClient extends SimpleApplication implements ClientNetworkListener, ActionListener {
@@ -75,7 +77,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     
     //list of players and corresponding characters (pacman or ghost) 
     public LinkedList<Player> gamePlayers;
-    public LinkedList<Character> gamePlayerCharacters;
+    public ArrayList gamePlayerCharacters;
 
     private MyStartScreen startScreen;
 
@@ -109,7 +111,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         setPauseOnLostFocus(false);
         
         this.gamePlayers = new LinkedList<Player>();
-        this.gamePlayerCharacters = new LinkedList<Character>();
+        this.gamePlayerCharacters = new ArrayList();
         this.player = null;
         this.pac = null;
         //this.ghost = null;
@@ -224,7 +226,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         for(Player temp : gamePlayers) {
             boolean create = true;
             for(int j = 0; j < gamePlayerCharacters.size(); j++) {
-                if(gamePlayerCharacters.get(j).getClientId() == temp.getId()) {
+                if(((Character)gamePlayerCharacters.get(j)).getClientId() == temp.getId()) {
                     create = false;
                 } 
             }
@@ -239,6 +241,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
                 switch(temp.getCharacterIndex()) {
                     case 0: //pacman
                         newChar = new Pacman(this, temp);
+                        rootNode.attachChild((Node)newChar);
                         this.gamePlayerCharacters.add(newChar);
                         break;
                     case 1:
@@ -267,7 +270,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
             //initialize pacman, create him
             
             //add to character list 
-            gamePlayerCharacters.add(this.pac);
+            gamePlayerCharacters.add(this.player.getId(), this.pac);
         } else {
             this.player.setMovementSpeed(10);
             this.ghost = new Ghost(this, this.player);
@@ -275,7 +278,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
             //initialize pacman, create him
             
             //add to character list 
-            gamePlayerCharacters.add(this.ghost);
+            gamePlayerCharacters.add(this.player.getId(), this.ghost);
         }
         initCam();
         System.out.println("character list: " + gamePlayerCharacters);
@@ -505,18 +508,26 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
             if(mazeCreated) {
                 final PositionMessage pm = (PositionMessage)msg;
                 if(pm.getId() != player.getId()) {
-                    for(final Character c : gamePlayerCharacters) {
-                        if(c.getClientId() == pm.getId()) {
-                            this.enqueue(new Callable<Spatial>() {
-                                public Spatial call() throws Exception {
-                                    ((Node)c).setLocalTranslation(pm.getPos());
-                                    return (Node)c;
-                                }
-                            });
-                            
-                            break;
+                    this.enqueue(new Callable<Spatial>() {
+                        public Spatial call() throws Exception {
+                            ((Node)gamePlayerCharacters.get(pm.getId())).setLocalTranslation(pm.getPos());
+                            return ((Node)gamePlayerCharacters.get(pm.getId()));
                         }
-                    }
+                    });
+
+                }
+            }
+        } else if(msg instanceof RotationMessage) {
+            if(mazeCreated) {
+                final RotationMessage rm = (RotationMessage)msg;
+                if(rm.getId() != player.getId()) {
+                    this.enqueue(new Callable<Spatial>() {
+                        public Spatial call() throws Exception {
+                            ((Node)gamePlayerCharacters.get(rm.getId())).setLocalRotation(rm.getRot());
+                            return ((Node)gamePlayerCharacters.get(rm.getId()));
+                        }
+                    });
+
                 }
             }
         }
@@ -526,10 +537,24 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     @Override
     public void simpleUpdate(float tpf) {
         if(rotateLeft){
-            pac.rotate(0, tpf/4, 0);
+            if(this.player.getCharacter().toLowerCase().equals("pacman")) {
+                pac.rotate(0, tpf/4, 0);
+            } else {
+                ghost.rotate(0, tpf/4, 0);
+            }
+            RotationMessage rm = new RotationMessage((this.pac == null) ? this.ghost.getLocalRotation() : 
+                    this.pac.getLocalRotation(), this.player.getId());
+            networkHandler.send(rm);
         }
         if(rotateRight){
-            pac.rotate(0, -tpf/4, 0);
+            if(this.player.getCharacter().toLowerCase().equals("pacman")) {
+                pac.rotate(0, -tpf/4, 0);
+            } else {
+                ghost.rotate(0, -tpf/4, 0);
+            }
+            RotationMessage rm = new RotationMessage((this.pac == null) ? this.ghost.getLocalRotation() : 
+                    this.pac.getLocalRotation(), this.player.getId());
+            networkHandler.send(rm);
         }
     }
 }
