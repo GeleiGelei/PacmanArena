@@ -233,20 +233,24 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         
         if(initPlayerCalled) {
             if(this.player.getCharacter().toLowerCase().equals("pacman")) {
-                this.player.setMovementSpeed(14);
+                if(this.pac == null) {
+                    this.player.setMovementSpeed(14);
 
-                this.pac = new Pacman(this, this.player);
-                rootNode.attachChild(this.pac);
+                    this.pac = new Pacman(this, this.player);
+                    rootNode.attachChild(this.pac);
 
-                //add to character list 
-                gamePlayerCharacters.add(this.player.getId(), this.pac);
+                    //add to character list 
+                    gamePlayerCharacters.add(this.player.getId(), this.pac);
+                }
             } else {
-                this.player.setMovementSpeed(10);
-                this.ghost = new Ghost(this, this.player);
-                rootNode.attachChild(this.ghost);
+                if(this.ghost == null) {
+                    this.player.setMovementSpeed(10);
+                    this.ghost = new Ghost(this, this.player);
+                    rootNode.attachChild(this.ghost);
 
-                //add to character list 
-                gamePlayerCharacters.add(this.player.getId(), this.ghost);
+                    //add to character list 
+                    gamePlayerCharacters.add(this.player.getId(), this.ghost);
+                }
             }
             initCam();
         }
