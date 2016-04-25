@@ -70,6 +70,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     boolean rotateRight = false;
     Maze clientMaze;
     boolean mazeCreated;
+    boolean initPlayerCalled = false;
     
     //list of players and corresponding characters (pacman or ghost) 
     public LinkedList<Player> gamePlayers;
@@ -180,6 +181,10 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     public Pacman getPacman(){
         return this.pac;
     }
+    
+    public Ghost getGhost(){
+        return this.ghost;
+    }
 
     // -------------------------------------------------------------------------
     // This client received its InitialClientMessage.
@@ -251,6 +256,8 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
                 }
             }
         }
+        if(initPlayerCalled)
+            initCam();
     }
     
     public void initPlayer(String playerName, String playerCharacter, String playerCharacterName, int characterIndex) {
@@ -273,9 +280,9 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
             //add to character list 
             gamePlayerCharacters.add(this.ghost);
         }
-        initCam();
         System.out.println("character list: " + gamePlayerCharacters);
         
+        initPlayerCalled = true;
         //send over the new player info
         networkHandler.send(ncf);
     }
@@ -310,16 +317,25 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         
         CameraNode camNode = new CameraNode("Camera Node", cam);
         camNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
-        Pacman temp = this.getPacman();
-        temp.pacNode.attachChild(camNode);
-        
-        camNode.setLocalTranslation(new Vector3f(0, 8, -15));
-        camNode.lookAt(temp.getLocalTranslation(), Vector3f.UNIT_Y);
-        
+
+        // Checks to see whether its pacman or ghost
+        if(player.getCharacterIndex() == 0){
+            Pacman temp = this.getPacman();
+            temp.pacNode.attachChild(camNode);
+            camNode.setLocalTranslation(new Vector3f(0, 8, -15));
+            camNode.lookAt(temp.getLocalTranslation(), Vector3f.UNIT_Y);
+        }
+        else{
+            Ghost temp = this.getGhost();
+            temp.ghostNode.attachChild(camNode);
+            camNode.setLocalTranslation(new Vector3f(0, 8, -15));
+            camNode.lookAt(temp.getLocalTranslation(), Vector3f.UNIT_Y);
+        }
+
         Quaternion XQuat = new Quaternion();
         XQuat.fromAngleAxis(20 * FastMath.DEG_TO_RAD, Vector3f.UNIT_X);
-        
         camNode.setLocalRotation(XQuat);
+        
     }
     
     private void initNifty(){
@@ -416,15 +432,22 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         public void onAnalog(String name, float value, float tpf) {
             speed = player.getMovementSpeed();
 
-            if (name.equals("moveForward")) {
+            if (name.equals("moveForward") && player.getCharacterIndex() == 0) {
                 Vector3f forward = pac.getLocalRotation().mult(Vector3f.UNIT_Z);
-                //pac.setLocalTranslation(forward);
                 pac.move(forward.mult(tpf).mult(speed));
-                //pac.setLocalTranslation(v.x, v.y, v.z + value*speed);
                 pac.movePacman();
 
                 //build the position message and send to the server
                 PositionMessage pm = new PositionMessage((pac == null) ? ghost.getLocalTranslation() : 
+                        pac.getLocalTranslation(), player.getId());
+                networkHandler.send(pm);
+            }else{
+                Vector3f forward = ghost.getLocalRotation().mult(Vector3f.UNIT_Z);
+                ghost.move(forward.mult(tpf).mult(speed));
+                //ghost.moveGhost();
+
+                //build the position message and send to the server
+                PositionMessage pm = new PositionMessage((ghost == null) ? ghost.getLocalTranslation() : 
                         pac.getLocalTranslation(), player.getId());
                 networkHandler.send(pm);
             }
