@@ -4,9 +4,11 @@
 package server;
 
 import com.jme3.network.Message;
+import messages.InitMazeMessage;
 import messages.NewClientFinalize;
 import messages.NewClientMessage;
 import messages.Player;
+import messages.VulnerabilityMessage;
 public class GameServer implements ServerNetworkListener {
 
     ServerNetworkHandler networkHandler;
@@ -47,8 +49,18 @@ public class GameServer implements ServerNetworkListener {
             System.out.println("Recieved newclientfinalize message");
             //player intends to update his information
             gameWorld.finalizePlayer((NewClientFinalize)msg);
+            
+            //broadcast the maze to the new player that just connected
+            InitMazeMessage imm = new InitMazeMessage(gameWorld.mazeData);
+            networkHandler.broadcast(imm);
+            
+            //broadcast the new player that just connected to all players
             NewClientMessage resp = new NewClientMessage(((NewClientFinalize)msg).getId(), gameWorld.data);
             networkHandler.broadcast(resp);
+        } else if(msg instanceof VulnerabilityMessage) {
+            VulnerabilityMessage vul = (VulnerabilityMessage)msg;
+            gameWorld.setVulnerable(vul.getVulnerability());
+            networkHandler.broadcast(vul);
         }
     }
 

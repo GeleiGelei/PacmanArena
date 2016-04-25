@@ -90,7 +90,7 @@ public class MyStartScreen extends AbstractAppState implements ScreenController{
         
         System.out.println("inputName: " + inputName);
         //creates an instance of NewClientFinalize and sends message to server
-        main.initPlayer(inputName, selected, selectedName);
+        main.initPlayer(inputName, selected, selectedName, indexOfSelectedCharacter);
     }
      
 //    // This officially starts the actual game
@@ -102,7 +102,27 @@ public class MyStartScreen extends AbstractAppState implements ScreenController{
         this.nifty = nifty;
         this.screen = screen;
     }
-
+    
+    //toggles the HUG ghost image display 
+    public void toggleVulnerabilityGraphics(boolean isVulnerable) {
+        if(isVulnerable) {
+            //toggle HUD character image to be the blue ghost 
+        } else {
+            //toggle it to be the normal ghost image
+            switch(main.getPlayer().getCharacterIndex()) {
+                case 1: //clyde 
+                    break;
+                case 2: //inky
+                    break;
+                case 3: //blinky
+                    break;
+                case 4: //pinky
+                    break;
+                default: System.out.println("Error in toggleVulnerability");
+            }
+        }
+    }
+    
     public void onStartScreen() {
         if(screen.getScreenId().equals("start")) {
             System.out.println("=== on the start screen ===");

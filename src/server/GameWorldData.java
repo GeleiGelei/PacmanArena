@@ -15,10 +15,13 @@ import messages.Player;
 
 public class GameWorldData {
     public LinkedList<Player> data;
+    public byte[][] mazeData;
+    public boolean mazeCreated;
 
     // -------------------------------------------------------------------------
     public GameWorldData() {
         data = new LinkedList<Player>();
+        mazeCreated = false;
     }
 
     // -------------------------------------------------------------------------
@@ -67,6 +70,12 @@ public class GameWorldData {
     
     // last step in getting a player set up for gameplay
     public void finalizePlayer(NewClientFinalize pData) {
+        //save the maze data of the first person to connect
+        if(!mazeCreated) {
+            this.mazeData = pData.getMazeData();
+            mazeCreated = true;
+        }
+        
         for(Player p : data) {
             if(p.getId() == pData.getId()) {
                 System.out.println("Setting player character to: " + pData.getGameChar());
@@ -74,6 +83,7 @@ public class GameWorldData {
                 p.setCharacter(pData.getGameChar());
                 p.setCharacterName(pData.getGameCharName());
                 p.setMovementSpeed(pData.getMovementSpeed());
+                p.setCharacterIndex(pData.getCharacterIndex());
                 break;
             }
         }
@@ -81,5 +91,14 @@ public class GameWorldData {
     
     public LinkedList getData() {
         return this.data;
+    }
+    
+    public void setVulnerable(boolean vulnerable) {
+        for(int i = 0; i < data.size(); i++) {
+            Player temp = data.get(i);
+            if(temp.getCharacter().toLowerCase().equals("ghost")) {
+                temp.setVulnerability(vulnerable);
+            }
+        }
     }
 }

@@ -18,6 +18,10 @@ public class PlayerDisconnectMessage extends AbstractMessage {
         this.playerId = id;
     }
     
+    public int getId() {
+        return this.playerId;
+    }
+    
     public void setNumPlayers(int numPlayers) {
         this.numPlayers = numPlayers;
     }

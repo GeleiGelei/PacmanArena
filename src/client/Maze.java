@@ -83,15 +83,10 @@ public class Maze {
 
     public Maze(int r, int c, boolean show) {
         generate(r, c);  // generate maze
-        if (show) {
-            JFrame f = new JFrame("Maze2D");
-            f.setDefaultCloseOperation(EXIT_ON_CLOSE);
-
-            mazePanel = new MyPanel();
-            f.add(mazePanel);
-            f.pack();
-            f.setVisible(true);
-        }
+    }
+    
+     public Maze(byte[][] otherMaze) {
+        generateFromOther(otherMaze);  // generate maze
     }
 
     public byte getMazeData(int r, int c) {
@@ -141,6 +136,23 @@ public class Maze {
         // pick a start point
         int startR = (int) Math.floor(Math.random() * rows);
         int startC = (int) Math.floor(Math.random() * rows);
+        count = 0;
+
+        // and generate
+        generateRec(startR, startC, 0);
+        // set exit point to 0,0
+        theMaze[0][0] |= 0x20;      // 0x20: exit
+        theMaze[0][0] &= 0xFE;      // remove North Wall   
+        mazePanel = new MyPanel();      // create and add new panel
+    }
+    
+    public final void generateFromOther(byte[][] otherMaze) {
+        // initialize: all walls up, path=false => 0x0f
+        theMaze = otherMaze;
+
+        // pick a start point
+        int startR = (int) Math.floor(Math.random() * theMaze.length);
+        int startC = (int) Math.floor(Math.random() * theMaze.length);
         count = 0;
 
         // and generate
@@ -263,5 +275,17 @@ public class Maze {
             s = s + "\n";
         }
         return (s);
+    }
+    
+    public int getRows() {
+        return this.theMaze.length;
+    }
+    
+    public int getCols() {
+        return this.theMaze[0].length;
+    }
+    
+    public byte[][] getMazeBytes() {
+        return this.theMaze;
     }
 }

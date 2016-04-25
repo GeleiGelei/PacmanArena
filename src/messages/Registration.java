@@ -16,5 +16,10 @@ public class Registration {
         Serializer.registerClass(Player.class);
         Serializer.registerClass(NewClientFinalize.class);
         Serializer.registerClass(PlayerDisconnectMessage.class);
+        Serializer.registerClass(LivesUpdateMessage.class);
+        Serializer.registerClass(VulnerabilityMessage.class);
+        Serializer.registerClass(PointUpdateMessage.class);
+        Serializer.registerClass(PositionMessage.class);
+        Serializer.registerClass(InitMazeMessage.class);
     }
 }

@@ -10,17 +10,19 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Sphere;
-
-public class Pacman extends Node{
+import messages.Player;
     
+public class Pacman extends Node implements Character {
+    
+    private Player p; //the associated player with this character
     public Node pacNode;
     public Spatial pNode;
     private AnimChannel channel;
     private AnimControl control;
     
-    
     // Constructor
-    Pacman(SimpleApplication sa){
+    Pacman(SimpleApplication sa, Player p){
+        this.p = p;
         createPacman(sa);
     }
     
@@ -39,11 +41,14 @@ public class Pacman extends Node{
         System.out.println(control.getAnimationNames());
 
         this.attachChild(pacNode);
-        //sa.getRootNode().attachChild(pacNode);
+        sa.getRootNode().attachChild(this);
     }
     
     public void movePacman(){
         channel.setAnim("mouth_move");
     }
     
+    public int getClientId() {
+        return this.p.getId();
+    }
 }

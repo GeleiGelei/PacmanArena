@@ -38,9 +38,12 @@ import de.lessvoid.nifty.screen.ScreenController;
 import java.awt.Dimension;
 import java.awt.TextField;
 import java.awt.Toolkit;
+import java.util.LinkedList;
+import messages.InitMazeMessage;
 import messages.NewClientFinalize;
 import messages.NewClientMessage;
 import messages.PlayerDisconnectMessage;
+import messages.VulnerabilityMessage;
 
 public class GameClient extends SimpleApplication implements ClientNetworkListener, ActionListener {
     
@@ -60,14 +63,17 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     Geometry geomLarge, geomSmall, geomGround;
     Node mazeNode;
     Pacman pac;
+    Ghost ghost;
     ChaseCamera camera;
-    JmeInit jmeinit;
     boolean rotateLeft = false;
     boolean rotateRight = false;
+    Maze clientMaze;
+    boolean mazeCreated;
+    
+    //list of players and corresponding characters (pacman or ghost) 
+    public LinkedList<Player> gamePlayers;
+    public LinkedList<Character> gamePlayerCharacters;
 
-
-    Box b = new Box(Vector3f.ZERO, 1, 1, 1);
-    Geometry geom = new Geometry("Box", b);
     private MyStartScreen startScreen;
 
     // -------------------------------------------------------------------------
@@ -83,6 +89,10 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         
     }
 
+    public Player getPlayer() {
+        return this.player;
+    }
+    
     // -------------------------------------------------------------------------
     public GameClient() {
         // this constructor has no fly cam!
@@ -95,47 +105,47 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     public void simpleInitApp() {
         setPauseOnLostFocus(false);
         
+        this.gamePlayers = new LinkedList<Player>();
+        this.gamePlayerCharacters = new LinkedList<Character>();
         this.player = null;
         this.pac = null;
-        
-        
-        // Initializing the mats, lighting, etc.
-        //jmeinit = new JmeInit(this);
+        //this.ghost = null;
         
         // Initialize the sky, lights, keys, and NiftyGui
-        
         createSkybg();
         initLightandShadow();
         initMaterial();
         initKeys();
         
-        createPac();
-        initCam();
+        
         initGui();
         initNifty();
         
+        //generate a temporary maze until we figure out which one to use
+        mazeCreated = false;
+        clientMaze = new Maze(40, 30, false);
+        
         //creates a new ClientNetworkHandler and connects to the server
         connect();
-
-        // This just runs a simple cube rotating. (Replace with the actual pacman game)
-        //testRun();
-        buildMaze(10,5);
+        //buildMaze(10,5);
         
     }
-
-    private void buildMaze(int cols, int rows) {
-        Maze maze = new Maze(rows, cols, false);
+    
+    private void buildMaze() {
+        mazeCreated = true;
         mazeNode = new Node();
-        
         // create maze cells
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
+        for (int r = 0; r < clientMaze.getRows(); r++) {
+            for (int c = 0; c < clientMaze.getCols(); c++) {
                 Cheese ch = new Cheese(this);
-                MazeCell mc = new MazeCell(maze, r, c, this, ch);
+                MazeCell mc = new MazeCell(clientMaze, r, c, this, ch);
                 mazeNode.attachChild(mc);
                 mazeNode.attachChild(ch);
             }
         }
+        
+        int cols = clientMaze.getCols();
+        int rows = clientMaze.getRows();
 
 //        // add South Boundary
         Box south = new Box(cols * MazeCell.CELLSIZE / 2, MazeCell.WALLHEIGHT, MazeCell.WALLTHICKNESS);
@@ -166,22 +176,8 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         rootNode.attachChild(mazeNode);
     }
     
-    public void createPac(){
-        pac = new Pacman(this);
-        pac.setLocalTranslation(0, 1, 0);
-        rootNode.attachChild(pac);
-        //pac.setLocalTranslation(mazeNode.getLocalTranslation());
-    }
-    
     public Pacman getPacman(){
         return this.pac;
-    }
-    
-    public void testRun(){
-        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        mat.setColor("Color", ColorRGBA.Blue);
-        geom.setMaterial(mat);
-        rootNode.attachChild(geom);
     }
 
     // -------------------------------------------------------------------------
@@ -191,6 +187,9 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         this.ID = msg.ID;
         System.out.println("My ID: " + this.ID);
         
+        //update the player data
+        gamePlayers = msg.gameWorldData;
+        System.out.println("Updated player list: " + gamePlayers.toString());
         for(Player p : msg.gameWorldData) {
             
             if(p.getId() == msg.ID) {
@@ -217,11 +216,60 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         if(this.nifty.getCurrentScreen().getScreenId().equals("start")) {
             nifty.getScreen("start").findNiftyControl("playersConnected", Label.class).setText(msg.gameWorldData.size() + " players connected");
         }
+        
+        //add new player models to the game if it hasn't been done already 
+        for(Player temp : gamePlayers) {
+            boolean create = true;
+            for(int j = 0; j < gamePlayerCharacters.size(); j++) {
+                if(gamePlayerCharacters.get(j).getClientId() == temp.getId()) {
+                    create = false;
+                } 
+            }
+            
+            if(create) {
+                switch(temp.getCharacterIndex()) {
+                    case 0: //pacman
+                        this.gamePlayerCharacters.add(new Pacman(this, temp));
+                        break;
+                    case 1: //clyde
+                        this.gamePlayerCharacters.add(new Ghost(this, temp));
+                        break;
+                    case 2: //inky
+                        this.gamePlayerCharacters.add(new Ghost(this, temp));
+                        break;
+                    case 3: //blinky
+                        this.gamePlayerCharacters.add(new Ghost(this, temp));
+                        break;
+                    case 4: //pinky
+                        this.gamePlayerCharacters.add(new Ghost(this, temp));
+                        break;
+                    default: System.out.println("Error in initGame");
+                }
+            }
+        }
     }
     
-    public void initPlayer(String playerName, String playerCharacter, String playerCharacterName) {
-        NewClientFinalize ncf = new NewClientFinalize(this.player.getId(), playerName, playerCharacter, playerCharacterName);
-       
+    public void initPlayer(String playerName, String playerCharacter, String playerCharacterName, int characterIndex) {
+        NewClientFinalize ncf = new NewClientFinalize(this.player.getId(), playerName, playerCharacter, playerCharacterName, characterIndex, clientMaze.getMazeBytes());
+        
+        System.out.println("player list: " + gamePlayers + ", currentPlayer: " + this.player.getId());
+        if(playerCharacter.toLowerCase().equals("pacman")) {
+            this.pac = new Pacman(this, this.player);
+            //initialize pacman, create him
+            
+            //add to character list 
+            gamePlayerCharacters.add(this.pac);
+        } else {
+            this.ghost = new Ghost(this, this.player);
+            
+            //initialize pacman, create him
+            
+            //add to character list 
+            gamePlayerCharacters.add(this.ghost);
+        }
+        initCam();
+        System.out.println("character list: " + gamePlayerCharacters);
+        
         //send over the new player info
         networkHandler.send(ncf);
     }
@@ -252,7 +300,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     }
     
     private void initCam(){
-        this.getFlyByCamera().setEnabled(true);
+        this.getFlyByCamera().setEnabled(false);
         
         CameraNode camNode = new CameraNode("Camera Node", cam);
         camNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
@@ -406,6 +454,35 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
             if(this.nifty.getCurrentScreen().getScreenId().equals("start")) {
                 PlayerDisconnectMessage pdm = (PlayerDisconnectMessage)msg;
                 nifty.getScreen("start").findNiftyControl("playersConnected", Label.class).setText(pdm.getNumPlayers() + " players connected");
+                
+                //find the disconnected player in the list of players
+                int pIdx = -1;
+                for(int i = 0; i < gamePlayers.size(); i++) {
+                    if(gamePlayers.get(i).getId() == pdm.getId()) {
+                        pIdx = i;
+                        break;
+                    }
+                }
+                
+                //remove the player data and corresponding character object from the game 
+                if(pIdx != -1) {
+                    gamePlayers.remove(pIdx);
+                    rootNode.detachChild((Node)gamePlayerCharacters.get(pIdx));
+                    gamePlayerCharacters.remove(pIdx);
+                }
+            }
+        } else if(msg instanceof VulnerabilityMessage) {
+            VulnerabilityMessage vm = (VulnerabilityMessage)msg;
+            if(this.player.getCharacter().toLowerCase().equals("ghost")) {
+                this.player.setVulnerability(vm.getVulnerability());
+                startScreen.toggleVulnerabilityGraphics(vm.getVulnerability());
+                this.ghost.toggleVulnerability(vm.getVulnerability());
+            }
+        } else if(msg instanceof InitMazeMessage) {
+            if(!mazeCreated) {
+                InitMazeMessage imm = (InitMazeMessage)msg;
+                this.clientMaze = new Maze(imm.getMazeData());
+                buildMaze();
             }
         }
     }

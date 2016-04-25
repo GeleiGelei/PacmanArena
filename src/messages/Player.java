@@ -34,6 +34,7 @@ public class Player extends AbstractMessage {
     private Vector3f location;    //current location
     private Vector3f spawnLocation;//spawn location 
     private int movementSpeed;    //used as a multiplier for movement
+    private int characterIndex;   //index of the character in the start screen menu
     
     /*Ghost-specific data*/
     private boolean isVulnerable; // changes when ghost becomes 'blue'
@@ -136,5 +137,17 @@ public class Player extends AbstractMessage {
     
     public void heal() {
         this.lives++;
+    }
+    
+    public void setVulnerability(boolean vulnerable) {
+        this.isVulnerable = vulnerable;
+    }
+    
+    public void setCharacterIndex(int idx) {
+        this.characterIndex = idx;
+    }
+    
+    public int getCharacterIndex() {
+        return this.characterIndex;
     }
 }

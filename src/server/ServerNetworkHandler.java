@@ -74,7 +74,7 @@ public class ServerNetworkHandler implements MessageListener, ConnectionListener
     public void broadcast(Message m) {
         server.broadcast(m);
     }
-
+    
     // -------------------------------------------------------------------------
     public void connectionRemoved(Server server, HostedConnection conn) {
         //remove the player from the game
