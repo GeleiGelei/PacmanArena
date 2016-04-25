@@ -194,20 +194,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         floor.setLocalTranslation((cols - 1) * MazeCell.CELLSIZE / 2, -MazeCell.CELLSIZE / 10, (rows - 1) * MazeCell.CELLSIZE / 2);
         mazeNode.attachChild(floor);
 
-
-        // translate maze such that center is in 0 0
-//        float transX = cols * MazeCell.CELLSIZE / 2f;
-//        float transZ = rows * MazeCell.CELLSIZE / 2f;
-//        mazeNode.setLocalTranslation(-transX, 0f, -transZ);
         rootNode.attachChild(mazeNode);
-    }
-    
-    public Pacman getPacman(){
-        return this.pac;
-    }
-    
-    public Ghost getGhost(){
-        return this.ghost;
     }
 
     // -------------------------------------------------------------------------
@@ -242,6 +229,26 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         //update player count on the start screen 
         if(this.nifty.getCurrentScreen().getScreenId().equals("start")) {
             nifty.getScreen("start").findNiftyControl("playersConnected", Label.class).setText(msg.gameWorldData.size() + " players connected");
+        }
+        
+        if(initPlayerCalled) {
+            if(this.player.getCharacter().toLowerCase().equals("pacman")) {
+                this.player.setMovementSpeed(14);
+
+                this.pac = new Pacman(this, this.player);
+                rootNode.attachChild(this.pac);
+
+                //add to character list 
+                gamePlayerCharacters.add(this.player.getId(), this.pac);
+            } else {
+                this.player.setMovementSpeed(10);
+                this.ghost = new Ghost(this, this.player);
+                rootNode.attachChild(this.ghost);
+
+                //add to character list 
+                gamePlayerCharacters.add(this.player.getId(), this.ghost);
+            }
+            initCam();
         }
         
         //add new player models to the game if it hasn't been done already 
@@ -290,33 +297,10 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
                 }
             }
         }
-        if(initPlayerCalled)
-            initCam();
     }
     
     public void initPlayer(String playerName, String playerCharacter, String playerCharacterName, int characterIndex) {
         NewClientFinalize ncf = new NewClientFinalize(this.player.getId(), playerName, playerCharacter, playerCharacterName, characterIndex, clientMaze.getMazeBytes());
-        
-        System.out.println("player list: " + gamePlayers + ", currentPlayer: " + this.player.getId());
-        if(playerCharacter.toLowerCase().equals("pacman")) {
-            this.player.setMovementSpeed(14);
-            
-            this.pac = new Pacman(this, this.player);
-            rootNode.attachChild(this.pac);
-            //initialize pacman, create him
-            
-            //add to character list 
-            gamePlayerCharacters.add(this.player.getId(), this.pac);
-        } else {
-            this.player.setMovementSpeed(10);
-            this.ghost = new Ghost(this, this.player);
-            rootNode.attachChild(this.ghost);
-            //initialize pacman, create him
-            
-            //add to character list 
-            gamePlayerCharacters.add(this.player.getId(), this.ghost);
-        }
-        System.out.println("character list: " + gamePlayerCharacters);
         
         initPlayerCalled = true;
         //send over the new player info
@@ -350,21 +334,31 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     private void initCam(){
         this.getFlyByCamera().setEnabled(false);
         
-        CameraNode camNode = new CameraNode("Camera Node", cam);
+        final CameraNode camNode = new CameraNode("Camera Node", cam);
         camNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
 
         // Checks to see whether its pacman or ghost
         if(player.getCharacterIndex() == 0){
-            Pacman temp = this.getPacman();
-            temp.pacNode.attachChild(camNode);
+            this.enqueue(new Callable<Spatial>() {
+                public Spatial call() throws Exception {
+                    pac.pacNode.attachChild(camNode);
+                    return null;
+                }
+            });
+            
             camNode.setLocalTranslation(new Vector3f(0, 12, -12));
-            camNode.lookAt(temp.getLocalTranslation(), Vector3f.UNIT_Y);
+            camNode.lookAt(this.pac.getLocalTranslation(), Vector3f.UNIT_Y);
         }
-        else{
-            Ghost temp = this.getGhost();
-            temp.ghostNode.attachChild(camNode);
+        else {
+            this.enqueue(new Callable<Spatial>() {
+                public Spatial call() throws Exception {
+                    ghost.ghostNode.attachChild(camNode);
+                    return null;
+                }
+            });
+            
             camNode.setLocalTranslation(new Vector3f(0, 12, -12));
-            camNode.lookAt(temp.getLocalTranslation(), Vector3f.UNIT_Y);
+            camNode.lookAt(this.ghost.getLocalTranslation(), Vector3f.UNIT_Y);
         }
 
         Quaternion XQuat = new Quaternion();
@@ -434,12 +428,11 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     // Keyboard input
     private void initKeys() {
         inputManager.addMapping("moveForward", new KeyTrigger(KeyInput.KEY_I));
-        inputManager.addMapping("moveBackward", new KeyTrigger(KeyInput.KEY_K));
         inputManager.addMapping("moveLeft", new KeyTrigger(KeyInput.KEY_J));
         inputManager.addMapping("moveRight", new KeyTrigger(KeyInput.KEY_L));
     
-        inputManager.addListener(analogListener,"moveForward", "moveBackward");
-        inputManager.addListener(actionListener, "moveLeft", "moveRight");
+        inputManager.addListener(analogListener,"moveForward");
+        inputManager.addListener(actionListener, "moveLeft", "moveRight", "moveForward");
     }
     
     private ActionListener actionListener = new ActionListener() {
@@ -460,6 +453,14 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
                 rotateRight = false;
             }
         }
+        
+        if(name.equals("moveForward")) {
+            if(player.getCharacter().toLowerCase().equals("pacman") && !keyPressed) {
+                System.out.println("Here");
+                pac.setMoving(false);
+                pac.toggleMoveAnimation();
+            }
+        }
     }
     };
     
@@ -467,40 +468,30 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         public void onAnalog(String name, float value, float tpf) {
             speed = player.getMovementSpeed();
 
-            if (name.equals("moveForward") && player.getCharacterIndex() == 0) {
-                Vector3f forward = pac.getLocalRotation().mult(Vector3f.UNIT_Z);
-                pac.move(forward.mult(tpf).mult(speed));
-                pac.movePacman();
+            if (name.equals("moveForward")) {
+                if(player.getCharacterIndex() == 0) {
+                    Vector3f forward = pac.getLocalRotation().mult(Vector3f.UNIT_Z);
+                    pac.move(forward.mult(tpf).mult(speed));
+                    pac.setMoving(true);
+                    pac.toggleMoveAnimation();
 
-                //build the position message and send to the server
-
-                if(posUpdate % 50 == 0) {
+                    //build the position message and send to the server
                     PositionMessage pm = new PositionMessage((pac == null) ? ghost.getLocalTranslation() : 
                             pac.getLocalTranslation(), player.getId());
                     networkHandler.send(pm);
-                }
-                posUpdate++;
-            }else{
-                Vector3f forward = ghost.getLocalRotation().mult(Vector3f.UNIT_Z);
-                ghost.move(forward.mult(tpf).mult(speed));
-                //ghost.moveGhost();
+                } else {
+                    Vector3f forward = ghost.getLocalRotation().mult(Vector3f.UNIT_Z);
+                    ghost.move(forward.mult(tpf).mult(speed));
+                    //ghost.moveGhost();
 
-                //build the position message and send to the server
-                if(posUpdate % 50 == 0) {
+                    //build the position message and send to the server
                     PositionMessage pm = new PositionMessage((ghost == null) ? pac.getLocalTranslation() : 
                             ghost.getLocalTranslation(), player.getId());
                     networkHandler.send(pm);
-                }
-                posUpdate++;
+                }   
             }
         }
     };
-
-    // key action
-    public void onAction(String name, boolean isPressed, float tpf) {
-        if (isPressed) {
-        }
-    }
 
     //called after the user has clicked the 'connect' button in nifty gui
     public void connect() {
@@ -573,7 +564,8 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
                         public Spatial call() throws Exception {
                             ((Node)gamePlayerCharacters.get(pm.getId())).setLocalTranslation(pm.getPos());
                             if(((Player)gamePlayers.get(pm.getId())).getCharacter().toLowerCase().equals("pacman")) {
-                                ((Pacman)gamePlayerCharacters.get(pm.getId())).movePacman();
+                                ((Pacman)gamePlayerCharacters.get(pm.getId())).setMoving(true);
+                                ((Pacman)gamePlayerCharacters.get(pm.getId())).toggleMoveAnimation();
                             }
                             return ((Node)gamePlayerCharacters.get(pm.getId()));
                         }
@@ -641,5 +633,9 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
         }
         
         //cheeseCollisionDetection();
+    }
+
+    public void onAction(String name, boolean isPressed, float tpf) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
