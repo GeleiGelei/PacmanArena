@@ -434,11 +434,10 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     // Keyboard input
     private void initKeys() {
         inputManager.addMapping("moveForward", new KeyTrigger(KeyInput.KEY_I));
-        inputManager.addMapping("moveBackward", new KeyTrigger(KeyInput.KEY_K));
         inputManager.addMapping("moveLeft", new KeyTrigger(KeyInput.KEY_J));
         inputManager.addMapping("moveRight", new KeyTrigger(KeyInput.KEY_L));
     
-        inputManager.addListener(analogListener,"moveForward", "moveBackward");
+        inputManager.addListener(analogListener,"moveForward");
         inputManager.addListener(actionListener, "moveLeft", "moveRight");
     }
     
@@ -474,23 +473,19 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
 
                 //build the position message and send to the server
 
-                if(posUpdate % 50 == 0) {
                     PositionMessage pm = new PositionMessage((pac == null) ? ghost.getLocalTranslation() : 
                             pac.getLocalTranslation(), player.getId());
                     networkHandler.send(pm);
-                }
                 posUpdate++;
             }else{
                 Vector3f forward = ghost.getLocalRotation().mult(Vector3f.UNIT_Z);
                 ghost.move(forward.mult(tpf).mult(speed));
-                //ghost.moveGhost();
+                ghost.walkGhost();
 
                 //build the position message and send to the server
-                if(posUpdate % 50 == 0) {
                     PositionMessage pm = new PositionMessage((ghost == null) ? pac.getLocalTranslation() : 
                             ghost.getLocalTranslation(), player.getId());
                     networkHandler.send(pm);
-                }
                 posUpdate++;
             }
         }

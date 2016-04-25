@@ -1,5 +1,7 @@
 package client;
 
+import com.jme3.animation.AnimChannel;
+import com.jme3.animation.AnimControl;
 import com.jme3.app.SimpleApplication;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
@@ -13,6 +15,8 @@ public class Ghost extends Node implements Character {
     Player p; //the associated client id of the player who controls this character
     public Node ghostNode;
     public Spatial gNode;
+    private AnimChannel channel;
+    private AnimControl control;
     
     public Ghost(SimpleApplication sa, Player p) {
         this.p = p;
@@ -29,9 +33,15 @@ public class Ghost extends Node implements Character {
         gNode.setMaterial(sa.getAssetManager().loadMaterial("Materials/Generated/orangeGhostMat.j3m"));
         ghostNode.attachChild(gNode);
         
+        Node child = (Node) ghostNode.getChild(0);
+        Node grandChild = (Node) child.getChild(0);
+        control = grandChild.getChild(0).getControl(AnimControl.class);
+        channel = control.createChannel();
+        System.out.println(control.getAnimationNames());
+        
         this.attachChild(ghostNode);
         sa.getRootNode().attachChild(this);
-        System.out.println("getting the ghost index " + p.getCharacterIndex());
+        //System.out.println("getting the ghost index " + p.getCharacterIndex());
         
         if(p.getCharacterIndex() == 1){
             System.out.println("hello");
@@ -45,6 +55,10 @@ public class Ghost extends Node implements Character {
         } else {
             //return the ghost back to its normal color
         }
+    }
+    
+    public void walkGhost(){
+        channel.setAnim("walk");
     }
 
     public int getClientId() {
