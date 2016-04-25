@@ -39,6 +39,7 @@ import java.awt.Dimension;
 import java.awt.TextField;
 import java.awt.Toolkit;
 import java.util.LinkedList;
+import java.util.concurrent.Callable;
 import messages.InitMazeMessage;
 import messages.NewClientFinalize;
 import messages.NewClientMessage;
@@ -70,6 +71,7 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
     boolean rotateRight = false;
     Maze clientMaze;
     boolean mazeCreated;
+    int posUpdate = 0;
     
     //list of players and corresponding characters (pacman or ghost) 
     public LinkedList<Player> gamePlayers;
@@ -424,9 +426,12 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
                 pac.movePacman();
 
                 //build the position message and send to the server
-                PositionMessage pm = new PositionMessage((pac == null) ? ghost.getLocalTranslation() : 
-                        pac.getLocalTranslation(), player.getId());
-                networkHandler.send(pm);
+                if(posUpdate % 50 == 0) {
+                    PositionMessage pm = new PositionMessage((pac == null) ? ghost.getLocalTranslation() : 
+                            pac.getLocalTranslation(), player.getId());
+                    networkHandler.send(pm);
+                }
+                posUpdate++;
             }
         }
     };
@@ -495,17 +500,22 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
                 buildMaze();
             }
         } else if(msg instanceof PositionMessage) {
-            if(!mazeCreated) {
-                PositionMessage pm = (PositionMessage)msg;
+            //System.out.println("Position message recieved");
+            if(mazeCreated) {
+                final PositionMessage pm = (PositionMessage)msg;
                 if(pm.getId() != player.getId()) {
-                    for(Character c : gamePlayerCharacters) {
+                    for(final Character c : gamePlayerCharacters) {
                         if(c.getClientId() == pm.getId()) {
-                            ((Node)c).setLocalTranslation(pm.getPos());
+                            this.enqueue(new Callable<Spatial>() {
+                                public Spatial call() throws Exception {
+                                    return ((Node)c).move(pm.getPos());
+                                }
+                            });
+                            
                             break;
                         }
                     }
                 }
-                buildMaze();
             }
         }
     }

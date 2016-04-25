@@ -47,7 +47,6 @@ public class GameServer implements ServerNetworkListener {
     // Methods required by ServerNetworkHandler
     public void messageReceived(Message msg) {
         if(msg instanceof NewClientFinalize) {
-            System.out.println("Recieved newclientfinalize message");
             //player intends to update his information
             gameWorld.finalizePlayer((NewClientFinalize)msg);
             

@@ -37,7 +37,6 @@ public class ServerNetworkHandler implements MessageListener, ConnectionListener
 
     // -------------------------------------------------------------------------
     public void messageReceived(Object source, Message msg) {
-        System.out.println("Received: " + msg);
         gameServer.messageReceived(msg);
     }
 
