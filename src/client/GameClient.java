@@ -426,12 +426,12 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
                 pac.movePacman();
 
                 //build the position message and send to the server
-                if(posUpdate % 50 == 0) {
+                //if(posUpdate % 10 == 0) {
                     PositionMessage pm = new PositionMessage((pac == null) ? ghost.getLocalTranslation() : 
                             pac.getLocalTranslation(), player.getId());
                     networkHandler.send(pm);
-                }
-                posUpdate++;
+                //}
+                //posUpdate++;
             }
         }
     };
@@ -508,7 +508,8 @@ public class GameClient extends SimpleApplication implements ClientNetworkListen
                         if(c.getClientId() == pm.getId()) {
                             this.enqueue(new Callable<Spatial>() {
                                 public Spatial call() throws Exception {
-                                    return ((Node)c).move(pm.getPos());
+                                    ((Node)c).setLocalTranslation(pm.getPos());
+                                    return (Node)c;
                                 }
                             });
                             
